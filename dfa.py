@@ -8,7 +8,7 @@ import sys, fileinput, os.path
 # DFA Properties
 numStates = 0         # size of Q (number of states in set)
 alphabet = []         # Sigma
-tranFunctions = []    # delta (qa 'char' qb) => (Q x 'Sig' -> Q)
+tranFunctions = []    # [set of] delta (qa 'char' qb) => (Q x 'Sig' -> Q)
 startState = ""       # qs (initial state of DFA)
 acceptStates = []     # F (set of end states that will return "Accept")
 inputStrings = []     # Set of strings tested on DFA
@@ -29,6 +29,7 @@ inputFilename = sys.argv[1]
 fileExists = os.path.exists(inputFilename)
 if (fileExists == False):
 	sys.exit("INPUT ERROR:\n Cannot find file. Check spelling of input.")
+
 
 
 ########################
@@ -56,6 +57,7 @@ while ("\'" in nextLine):
 	nextLine = inputFile.readline()
 
 #  4) read in start state (line after transitions)
+nextLine = nextLine.replace("\n", "")
 startState = nextLine
 
 #  5) read in set of accept states
@@ -92,19 +94,23 @@ def dfaTrace(input):
 
 	# Based on transition function,
 	#  set current state to new state
-	for eachChar in inputArray:
-		print("Test line: " + currState)
-		
-
-
 	print("Test line\n input string: " + input)
-
-
-
-
-
-
-
+	for eachChar in inputArray:
+		# 1) what is current state?
+		# 2) what is current char?
+		# 3) based on 1 and 2 above, 
+		#		what state comes next?
+		print("Test line: current state: " + currState)
+	
+	# test if we finished on an accept state
+	print("Test line: FINAL STATE: " + currState)
+	if(str(currState) in acceptStates):
+		print("ACCEPT")
+	else:
+		print("REJECT")
+	
+	print()
+	
 
 #########################################
 # Test lines: delete before submitting  #
@@ -132,12 +138,3 @@ print()
 for eachString in inputStrings:
 	dfaTrace(eachString)
 	
-	
-#	finalState = 0
-#	finalState = str(finalState)  # casts to string (if int)
-#	if (finalState in acceptStates):
-#		print("Accept")
-#	else:
-#		print("Reject")
-		
-
