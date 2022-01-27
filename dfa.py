@@ -19,7 +19,7 @@ inputStrings = []     # Set of strings tested on DFA
 ##########################
 
 # Command line should have 2 arguments (dfa.py and test_case)
-# Execute format: python3 dfa.py <testcase>.txt
+#  Execute format: python3 dfa.py <testcase>.txt
 numArgs = len(sys.argv)
 if (numArgs != 2):
 	sys.exit("INPUT ERROR:\n Format should be \"python3 dfa.py <testcase>.txt\"")
@@ -51,9 +51,14 @@ alphabet.remove("\n")
 
 #  3) read in set of transition functions
 nextLine = inputFile.readline()
-while ("\'" in nextLine):
+while ("\'" in nextLine):  # each tran funciton line has 2 ' in it
 	nextLine = nextLine.replace("\n", "")
-	tranFunctions.append(nextLine)  
+	eachFunct = [char for char in nextLine]
+	eachFunct.remove("'")  # each line has 2 '
+	eachFunct.remove(" ")  #  and two spaces;
+	eachFunct.remove("'")  # need one remove command
+	eachFunct.remove(" ")  #  for each char
+	tranFunctions.append(eachFunct)  
 	nextLine = inputFile.readline()
 
 #  4) read in start state (line after transitions)
@@ -83,14 +88,14 @@ inputFile.close()
 ######################
 # DFA Trace Function #
 ######################
-# Starting at qs, read in input string,
+# Initialize state at qs, read in input string,
 #  and jump to next state based on transition functions
 
 def dfaTrace(input):
 	# Break down input string into character array
 	#  and set current state at start of DFA
 	inputArray = [char for char in input]
-	currState = startState
+	currState = str(startState)
 
 	# Based on transition function,
 	#  set current state to new state
@@ -98,18 +103,17 @@ def dfaTrace(input):
 	for eachChar in inputArray:
 		# 1) what is current state?
 		# 2) what is current char?
-		# 3) based on 1 and 2 above, 
-		#		what state comes next?
-		print("Test line: current state: " + currState)
+		# 3) based on 1 and 2 above, what state comes next?
+		print("Test line: state: "+currState+", char: "+eachChar)
 	
-	# test if we finished on an accept state
+	# Test if we finished on an accept state
 	print("Test line: FINAL STATE: " + currState)
-	if(str(currState) in acceptStates):
+	if(currState in acceptStates):
 		print("ACCEPT")
 	else:
 		print("REJECT")
 	
-	print()
+	print() #delete this line
 	
 
 #########################################
@@ -133,8 +137,8 @@ print()
 ##########
 # Output #
 ##########
-#  Run "dfaTrace()" on each string in inputString array
-#  should print either "Accept" or "Reject"
+#  Run "dfaTrace()" on each string in inputString array,
+#   should print either "Accept" or "Reject"
 for eachString in inputStrings:
 	dfaTrace(eachString)
 	
