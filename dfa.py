@@ -1,4 +1,5 @@
-# John Lovre  -  JRL142@pitt.edu
+# John Lovre   - JRL142@pitt.edu
+# Suchi Attota - SUA27@pitt.edu
 # CS1502
 # PA1: DFA Simulation
 
@@ -51,7 +52,10 @@ alphabet.remove("\n")
 
 #  3) read in set of transition functions
 nextLine = inputFile.readline()
-while ("\'" in nextLine):  # each tran funciton line has 2 ' in it
+while ("\'" in nextLine):  # each tran function line has 2 ' in it
+	# tranFunction[] is an array of arrays
+	# each function in array should be of format: 
+	#  [current state, action, next state]
 	nextLine = nextLine.replace("\n", "")
 	eachFunct = [char for char in nextLine]
 	eachFunct.remove("'")  # each line has 2 '
@@ -59,7 +63,7 @@ while ("\'" in nextLine):  # each tran funciton line has 2 ' in it
 	eachFunct.remove("'")  # need one remove command
 	eachFunct.remove(" ")  #  for each char
 	tranFunctions.append(eachFunct)  
-	nextLine = inputFile.readline()
+	nextLine = inputFile.readline() # repeat for next input line
 
 #  4) read in start state (line after transitions)
 nextLine = nextLine.replace("\n", "")
@@ -95,7 +99,7 @@ def dfaTrace(input):
 	# Break down input string into character array
 	#  and set current state at start of DFA
 	inputArray = [char for char in input]
-	currState = str(startState)
+	currState = startState
 
 	# Based on transition function,
 	#  set current state to new state
