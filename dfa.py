@@ -53,7 +53,7 @@ alphabet.remove("\n")
 #  3) read in set of transition functions
 nextLine = inputFile.readline()
 while ("\'" in nextLine):  # each tran function line has 2 ' in it
-	# tranFunction[] is an array of arrays
+	# tranFunctions[] is an array of arrays
 	# each function in array should be of format: 
 	#  [current state, action, next state]
 	nextLine = nextLine.replace("\n", "")
@@ -109,6 +109,10 @@ def dfaTrace(input):
 		# 2) what is current char?
 		# 3) based on 1 and 2 above, what state comes next?
 		print("Test line: state: "+currState+", char: "+eachChar)
+		for eachTran in tranFunctions:
+			if (eachTran[0]==currState and eachTran[1]==eachChar):
+				currState = eachTran[2]
+				break
 	
 	# Test if we finished on an accept state
 	print("Test line: FINAL STATE: " + currState)
