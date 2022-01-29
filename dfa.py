@@ -56,13 +56,12 @@ while ("\'" in nextLine):  # each tran function line has 2 ' in it
 	# tranFunctions[] is an array of arrays
 	# each function in array should be of format: 
 	#  [current state, action, next state]
+	# separate each item in input line by ' character
 	nextLine = nextLine.replace("\n", "")
-	eachFunct = [char for char in nextLine]
-	eachFunct.remove("'")  # each line has 2 '
-	eachFunct.remove(" ")  #  and two spaces;
-	eachFunct.remove("'")  # need one remove command
-	eachFunct.remove(" ")  #  for each char
-	tranFunctions.append(eachFunct)  
+	while " " in nextLine:
+		nextLine = nextLine.replace(" ", "")
+	eachTran = nextLine.split("'")
+	tranFunctions.append(eachTran)
 	nextLine = inputFile.readline() # repeat for next input line
 
 #  4) read in start state (line after transitions)
@@ -117,9 +116,9 @@ def dfaTrace(input):
 	# Test if we finished on an accept state
 	print("Test line: FINAL STATE: " + currState)
 	if(currState in acceptStates):
-		print("ACCEPT")
+		print("Accept")
 	else:
-		print("REJECT")
+		print("Reject")
 	
 	print() #delete this line
 	
@@ -134,7 +133,7 @@ print("Test line\n alphabet: " , alphabet)
 print()
 print("Test line\n transition functions: ", tranFunctions)
 print()
-print("Test line\n start state is: " + startState)
+print("Test line\n start state is: " + startState + "\n")
 print("Test line\n accept states: " , acceptStates)
 print()
 print("Test line \n input strings: " , inputStrings)
