@@ -102,43 +102,20 @@ def dfaTrace(input):
 
 	# Based on transition function,
 	#  set current state to new state
-	print("Test line\n input string: " + input)
 	for eachChar in inputArray:
 		# 1) what is current state?
 		# 2) what is current char?
 		# 3) based on 1 and 2 above, what state comes next?
-		print("Test line: state: "+currState+", char: "+eachChar)
 		for eachTran in tranFunctions:
 			if (eachTran[0]==currState and eachTran[1]==eachChar):
 				currState = eachTran[2]
 				break
-	
-	# Test if we finished on an accept state
-	print("Test line: FINAL STATE: " + currState)
+
+	# Print if we finished on an accept or reject state
 	if(currState in acceptStates):
 		print("Accept")
 	else:
 		print("Reject")
-	
-	print() #delete this line
-	
-
-#########################################
-# Test lines: delete before submitting  #
-######################################################################
-print()
-print("Test line\n name of test file: " + inputFilename + "\n")
-print("Test line\n number of states in DFA: " + numStates)
-print("Test line\n alphabet: " , alphabet)
-print()
-print("Test line\n transition functions: ", tranFunctions)
-print()
-print("Test line\n start state is: " + startState + "\n")
-print("Test line\n accept states: " , acceptStates)
-print()
-print("Test line \n input strings: " , inputStrings)
-print()
-######################################################################
 
 
 ##########
@@ -148,4 +125,3 @@ print()
 #   should print either "Accept" or "Reject"
 for eachString in inputStrings:
 	dfaTrace(eachString)
-	
