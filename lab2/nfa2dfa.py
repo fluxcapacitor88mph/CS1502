@@ -17,3 +17,115 @@
 
 # 4) Make every DFA state that contains NFA state into DFA accept state
 #	(only consider states & transitions reachable from start state)
+
+# John Lovre   - JRL142@pitt.edu
+# Suchi Attota - SUA27@pitt.edu
+# CS1502
+# PA2: NFA to DFA Simulation
+
+# import necessary libraries
+import sys, fileinput, os.path
+
+# NFA Properties
+numStates = 0         # size of Q (number of states in set)
+alphabet = []         # Sigma
+tranFunctions = []    # [set of] delta (qa 'char' qb) => (Q x 'Sig' -> Q)
+startState = ""       # qs (initial state of NFA)
+acceptStates = []     # F (set of end states that will return "Accept")
+inputStrings = []     # Set of strings tested on NFA
+
+##########################
+# Check for input errors #
+##########################
+
+# Command line should have 3 arguments (nfa.py and test_case and output_file)
+#  Execute format: python3 nfa.py <testcase>.txt <output>.txt
+numArgs = len(sys.argv)
+if (numArgs != 3):
+	sys.exit("INPUT ERROR:\n Format should be \"python3 nfa.py <testcase>.txt <output>.txt\"")
+
+# Check that test file exists
+inputFilename = sys.argv[1]
+fileExists = os.path.exists(inputFilename)
+if (fileExists == False):
+	sys.exit("INPUT ERROR:\n Cannot find file. Check spelling of input.")
+
+########################
+# Read input from file #
+########################
+# Note: Program reads in newline (\n) character from input files
+#	parsing steps check to remove '\n' from strings and arrays
+
+inputFile = open(inputFilename, "r")
+
+#  1) read in size of Q (first line of input file)
+numStates = inputFile.readline()
+
+#  2) read in alphabet (second line of input file)
+alphaInput = inputFile.readline()
+for eachChar in range(len(alphaInput)):
+	alphabet.append(alphaInput[eachChar])
+alphabet.remove("\n")
+
+#  3) read in set of transition functions
+nextLine = inputFile.readline()
+while ("\'" in nextLine):  # each tran function line has 2 ' in it
+	# tranFunctions[] is an array of arrays
+	# each function in array should be of format: 
+	#  [current state, action, next state]
+	# separate each item in input line by ' character
+	nextLine = nextLine.replace("\n", "")
+	while " " in nextLine:
+		nextLine = nextLine.replace(" ", "")
+	eachTran = nextLine.split("'")
+	tranFunctions.append(eachTran)
+	nextLine = inputFile.readline() # repeat for next input line
+
+#  4) read in start state (line after transitions)
+nextLine = inputFile.readline() # repeat for next input line
+nextLine = nextLine.replace("\n", "")
+startState = nextLine
+
+#  5) read in set of accept states
+acceptInput = inputFile.readline()
+for eachState in acceptInput.split(" "):
+	if "\n" in eachState:
+		eachState = eachState.replace("\n", "")
+	acceptStates.append(eachState)
+	if "" in acceptStates:
+		acceptStates.remove("")
+
+#  6) read in set of string inputs
+# nextLine = inputFile.readline()
+# while (nextLine):
+#	if "\n" in nextLine:
+#		nextLine = nextLine.replace("\n", "")
+#	inputStrings.append(nextLine)
+#	nextLine = inputFile.readline();
+
+inputFile.close()
+
+
+#########################################
+# Test lines: delete before submitting  #
+######################################################################
+print()
+print("Test line\n name of test file: " + inputFilename + "\n")
+print("Test line\n number of states in DFA: " + numStates)
+print("Test line\n alphabet: " , alphabet)
+print()
+print("Test line\n transition functions: ", tranFunctions)
+print()
+print("Test line\n start state is: " + startState + "\n")
+print("Test line\n accept states: " , acceptStates)
+print()
+print("Test line \n input strings: " , inputStrings)
+print()
+######################################################################
+
+
+
+
+
+
+
