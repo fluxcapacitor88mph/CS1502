@@ -3,7 +3,7 @@
 #	(0.a) Read in NFA File
 #		(0.a.i) First line of input file: number of states (int)
 #		(0.a.ii) Second line of input file: alphabet of NFA
-#		(0.a.iii) Thire line and onward: Transition functions (qa 'c' qb)
+#		(0.a.iii) Third line and onward: Transition functions (qa 'c' qb)
 #		(0.a.iv) Blank line terminates transition function entries
 #		(0.a.v) Next line of input file: Start state of NFA (int)
 #		(0.a.vi) Last line of input file: Set accept states
@@ -32,7 +32,8 @@ alphabet = []         # Sigma
 tranFunctions = []    # [set of] delta (qa 'char' qb) => (Q x 'Sig' -> Q)
 startState = ""       # qs (initial state of NFA)
 acceptStates = []     # F (set of end states that will return "Accept")
-inputStrings = []     # Set of strings tested on NFA
+#inputStrings = []    # Set of strings tested on NFA
+
 
 ##########################
 # Check for input errors #
@@ -49,6 +50,10 @@ inputFilename = sys.argv[1]
 fileExists = os.path.exists(inputFilename)
 if (fileExists == False):
 	sys.exit("INPUT ERROR:\n Cannot find file. Check spelling of input.")
+
+# Create output file
+outputFilename = sys.argv[2]
+
 
 ########################
 # Read input from file #
@@ -119,10 +124,17 @@ print()
 print("Test line\n start state is: " + startState + "\n")
 print("Test line\n accept states: " , acceptStates)
 print()
-print("Test line \n input strings: " , inputStrings)
-print()
+#print("Test line \n input strings: " , inputStrings)
+#print()
 ######################################################################
 
+
+########################
+# Write to Output File #
+########################
+with open(outputFilename, 'w') as outFile:
+	outFile.write('Test output for ' + inputFilename)
+	
 
 
 
