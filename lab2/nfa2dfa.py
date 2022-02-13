@@ -78,18 +78,22 @@ while ("\'" in nextLine):  # each tran function line has 2 ' in it
 	# tranFunctions{} is a dictionary of dictionaries
 	# format: tranFunctions[source][symbol] = destination
 	nextLine = nextLine.replace("\n", "")
+
 	while " " in nextLine:
 		nextLine = nextLine.replace(" ", "")
 	eachTran = nextLine.split("'")
 	source, symbol, dest = eachTran
-	if source not in tranFunctions:
-		tranFunctions[source] = {}
-	# need to account for multiple destinations for [source][symbol] combos
-	
-	tranFunctions[source][symbol] = dest
-	# line above still needs tweaked
 
-	nextLine = inputFile.readline() # repeat for next input line
+	if source not in tranFunctions:          # add dictionary entry for source
+		tranFunctions[source] = {}
+
+	if symbol not in tranFunctions[source]:  # initialize list for source/symbol
+	
+		tranFunctions[source][symbol] = []
+
+	tranFunctions[source][symbol].append(dest)
+
+	nextLine = inputFile.readline()          # repeat for next input line
 
 #  4) read in start state (line after transitions)
 nextLine = inputFile.readline() # repeat for next input line
