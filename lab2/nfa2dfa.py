@@ -29,7 +29,7 @@ import sys, fileinput, os.path
 # NFA Properties
 numStates = 0         # size of Q (number of states in set)
 alphabet = []         # Sigma
-tranFunctions = []    # [set of] delta (qa 'char' qb) => (Q x 'Sig' -> Q)
+tranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
 startState = ""       # qs (initial state of NFA)
 acceptStates = []     # F (set of end states that will return "Accept")
 #inputStrings = []    # Set of strings tested on NFA
@@ -75,15 +75,20 @@ alphabet.remove("\n")
 #  3) read in set of transition functions
 nextLine = inputFile.readline()
 while ("\'" in nextLine):  # each tran function line has 2 ' in it
-	# tranFunctions[] is an array of arrays
-	# each function in array should be of format: 
-	#  [current state, action, next state]
-	# separate each item in input line by ' character
+	# tranFunctions{} is a dictionary of dictionaries
+	# format: tranFunctions[source][symbol] = destination
 	nextLine = nextLine.replace("\n", "")
 	while " " in nextLine:
 		nextLine = nextLine.replace(" ", "")
 	eachTran = nextLine.split("'")
-	tranFunctions.append(eachTran)
+	source, symbol, dest = eachTran
+	if source not in tranFunctions:
+		tranFunctions[source] = {}
+	# need to account for multiple destinations for [source][symbol] combos
+	
+	tranFunctions[source][symbol] = dest
+	# line above still needs tweaked
+
 	nextLine = inputFile.readline() # repeat for next input line
 
 #  4) read in start state (line after transitions)
