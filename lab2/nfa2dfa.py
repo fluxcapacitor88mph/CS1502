@@ -78,21 +78,15 @@ while ("\'" in nextLine):  # each tran function line has 2 ' in it
 	# tranFunctions{} is a dictionary of dictionaries
 	# format: tranFunctions[source][symbol] = destination
 	nextLine = nextLine.replace("\n", "")
-
 	while " " in nextLine:
 		nextLine = nextLine.replace(" ", "")
 	eachTran = nextLine.split("'")
 	source, symbol, dest = eachTran
-
 	if source not in tranFunctions:          # add dictionary entry for source
 		tranFunctions[source] = {}
-
 	if symbol not in tranFunctions[source]:  # initialize list for source/symbol
-	
 		tranFunctions[source][symbol] = []
-
 	tranFunctions[source][symbol].append(dest)
-
 	nextLine = inputFile.readline()          # repeat for next input line
 
 #  4) read in start state (line after transitions)
@@ -116,8 +110,23 @@ for eachState in acceptInput.split(" "):
 #		nextLine = nextLine.replace("\n", "")
 #	inputStrings.append(nextLine)
 #	nextLine = inputFile.readline();
+# destination states in nfa dictionary are going to be sets of destination states in DFA
 
 inputFile.close()
+
+
+#################
+# Next Steps    #
+#################
+# Now that we know number of state
+#  - use number of states
+#  - 2 to the power of numStates = total number states in DFA
+#  		(the above is max states, not all will get used)
+# Hint: use bitfields...
+#  array of nfa states (1 by 7, or 7 by 1)
+#    -- each entry is going to be 0 or 1
+#        (this says...bitfield of NFA states will determine DFA states)
+
 
 
 #########################################
