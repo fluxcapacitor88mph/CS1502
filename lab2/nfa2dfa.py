@@ -119,7 +119,14 @@ DFAtransitions = {}      # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
 DFAstartState = ""       # qs (initial state of DFA)
 DFAacceptStates = []     # F (set of end states that will return "Accept")
 
-# 1) Create start state of DFA (Follow format from Lab1)
+# 1) Create the start state of the DFA, which is E(q0), where q0 is the NFA start state and E(.) is the e-closure)
+print("\nTest line\n start state of DFA (e-closures): ")
+setofeClosures = []
+setofeClosures.append(7)
+for eclosure in tranFunctions[startState]['e']:
+	setofeClosures.append(int(eclosure))
+print(setofeClosures)
+
 
 # 2) For every new state R (previous step and every alphabet char delta,
 #	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
@@ -141,9 +148,12 @@ with open(outputFilename, 'w') as outFile:
 	# NEED TO SWAP OUT tranFunctions to DFAtransitions
 	for inState in tranFunctions:             # Transition Functions
 		for inSymbol in tranFunctions[inState]:
-			outFile.write('\n'+inState+" \'") #  1) read in state
-			outFile.write(inSymbol+"\' ")     #  2) read in symbol
-			outFile.write(str(tranFunctions[inState][inSymbol])) #  3) go to state
+		#  1) read-in state
+			outFile.write('\n'+inState+" \'")
+		#  2) read-in symbol
+			outFile.write(inSymbol+"\' ")
+		#  3) go-to state
+			outFile.write(str(tranFunctions[inState][inSymbol]))
 	# TEST BELOW TO WRITES WITH NFA, NEED TO UPDATE TO DFA
 	outFile.write('\n'+startState+'\n')    # Start States
 	for state in acceptStates:             # Accept States
@@ -158,7 +168,7 @@ outFile.close()
 ######################################################################
 print()
 print("Test line\n name of test file: " + inputFilename + "\n")
-print("Test line\n number of states in DFA: " + numStates)
+print("Test line\n number of states in NFA: " + numStates)
 print("Test line\n alphabet: " , alphabet)
 print()
 print("Test line\n transition functions: ", tranFunctions)
