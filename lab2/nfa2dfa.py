@@ -1,23 +1,3 @@
-# 0) Read input from a file as 1st command line argument
-#	  -- write output to file as 2nd command line argument
-#	(0.a) Read in NFA File
-#		(0.a.i) First line of input file: number of states (int)
-#		(0.a.ii) Second line of input file: alphabet of NFA
-#		(0.a.iii) Third line and onward: Transition functions (qa 'c' qb)
-#		(0.a.iv) Blank line terminates transition function entries
-#		(0.a.v) Next line of input file: Start state of NFA (int)
-#		(0.a.vi) Last line of input file: Set accept states
-
-# 1) Create start state of DFA (Follow format from Lab1)
-
-# 2) For every new state R (previous step and every alphabet char delta,
-#	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
-#	(2.b) If DFA did not already have T as state, add to new state and go back to 2
-# 3) Done adding new states when Step two yields no new states
-
-# 4) Make every DFA state that contains NFA state into DFA accept state
-#	(only consider states & transitions reachable from start state)
-
 # John Lovre   - JRL142@pitt.edu
 # Suchi Attota - SUA27@pitt.edu
 # CS1502
@@ -128,6 +108,50 @@ inputFile.close()
 #        (this says...bitfield of NFA states will determine DFA states)
 
 
+################
+# Creating DFA #
+################
+
+# DFA Properties
+DFAStates = 0            # size of Q (number of states in set)
+DFAalphabet = alphabet   # Alphabet is same for NFA and DFA
+DFAtransitions = {}      # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
+DFAstartState = ""       # qs (initial state of DFA)
+DFAacceptStates = []     # F (set of end states that will return "Accept")
+
+# 1) Create start state of DFA (Follow format from Lab1)
+
+# 2) For every new state R (previous step and every alphabet char delta,
+#	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
+#	(2.b) If DFA did not already have T as state, add to new state and go back to 2
+# 3) Done adding new states when Step two yields no new states
+
+# 4) Make every DFA state that contains NFA state into DFA accept state
+#	(only consider states & transitions reachable from start state)
+
+
+########################
+# Write to Output File #
+########################
+with open(outputFilename, 'w') as outFile:
+	outFile.write(str(DFAStates)+'\n')        # Set of States
+	for symbol in DFAalphabet:                # Alphabet
+		outFile.write(str(symbol))
+	# This is a test on NFA tran Functions
+	# NEED TO SWAP OUT tranFunctions to DFAtransitions
+	for inState in tranFunctions:             # Transition Functions
+		for inSymbol in tranFunctions[inState]:
+			outFile.write('\n'+inState+" \'") #  1) read in state
+			outFile.write(inSymbol+"\' ")     #  2) read in symbol
+			outFile.write(str(tranFunctions[inState][inSymbol])) #  3) go to state
+	# TEST BELOW TO WRITES WITH NFA, NEED TO UPDATE TO DFA
+	outFile.write('\n'+startState+'\n')    # Start States
+	for state in acceptStates:             # Accept States
+		outFile.write(str(state)+' ')
+	
+outFile.close()
+
+
 
 #########################################
 # Test lines: delete before submitting  #
@@ -145,17 +169,3 @@ print()
 #print("Test line \n input strings: " , inputStrings)
 #print()
 ######################################################################
-
-
-########################
-# Write to Output File #
-########################
-with open(outputFilename, 'w') as outFile:
-	outFile.write('Test output for ' + inputFilename)
-	
-
-
-
-
-
-
