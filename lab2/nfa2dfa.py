@@ -123,33 +123,43 @@ DFAacceptStates = []     # F (set of end states that will return "Accept")
 setOfStates = []         # Dictionary of DFA states based on PowerSet(NFA states)
 
 # 1) Create the start state of the DFA, which is E(q0), where q0 is the NFA start state and E(.) is the e-closure)
-setofeClosures = []     # DFA start state = NFA start state and set of states w/in e-closure from start state
-setofeClosures.append(startState)
-if ('e' in  tranFunctions[startState]):     # Need to test if there are epsilon transitions or else will break
-	for eclosure in tranFunctions[startState]['e']:
-		bisect.insort(setofeClosures, eclosure)
-bisect.insort(setOfStates, setofeClosures)
-DFAstates = DFAstates + 1
+def eTransitions(state):
+	setofeClosures = []     
+	setofeClosures.append(state)
+	if ('e' in  tranFunctions[state]):
+		for eclosure in tranFunctions[state]['e']:
+			bisect.insort(setofeClosures, eclosure)
+	return setofeClosures
+	
+def addState(state):
+	bisect.insort(setOfStates, state)
+	
+# DFA start state = NFA start state and set of states w/in e-closure from start state
+addState(eTransitions(startState))
 
-DFAstartState = str(setofeClosures)
+DFAstartState = str(setOfStates[0])
 
 # 2) For every new state R (previous step and every alphabet char delta,
 #	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
-DFAtransitions[DFAstartState] = {}
-for symbol in alphabet:
-	destinationStates = []
-	for state in setofeClosures:
-		if (symbol in tranFunctions[state]):
-			for destination in tranFunctions[state][symbol]:
-				bisect.insort(destinationStates, destination)
-				#	(2.b) If DFA did not already have T as state, add to new state and go back to 2
-				if not (destinationStates in setOfStates):
-					bisect.insort(setOfStates, destinationStates)
-					# need to figure out how to make this loop up to number 2 above at this line
-	DFAtransitions[DFAstartState][symbol] = destinationStates
+def getTransitions(currState):
+	DFAtransitions[str(setOfStates[currState])] = {}
+	for symbol in alphabet:
+		destinationStates = []
+		for state in setOfStates[currState]:
+			if (symbol in tranFunctions[state]):
+				for destination in tranFunctions[state][symbol]:
+					bisect.insort(destinationStates, destination)
+					#	(2.b) If DFA did not already have T as state, add it as new state and go back to #2
+					if not (destinationStates in setOfStates):
+						#bisect.insort(setOfStates, destinationStates)
+						addState(destinationStates)
+						# need to figure out how to make this loop up to number 2 above at this line
+		DFAtransitions[DFAstartState][symbol] = destinationStates
 
+getTransitions(0)
 
 # 3) Done adding new states when Step two yields no new states
+DFAstates = len(setOfStates)
 
 
 # 4) Make every DFA state that contains NFA state into DFA accept state
