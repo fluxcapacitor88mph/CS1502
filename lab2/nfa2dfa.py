@@ -123,41 +123,56 @@ DFAacceptStates = []     # F (set of end states that will return "Accept")
 setOfStates = []         # Dictionary of DFA states based on PowerSet(NFA states)
 
 # 1) Create the start state of the DFA, which is E(q0), where q0 is the NFA start state and E(.) is the e-closure)
-def eTransitions(state):
+def eTransitions(NFAstate):
 	setofeClosures = []     
-	setofeClosures.append(state)
-	if ('e' in  tranFunctions[state]):
-		for eclosure in tranFunctions[state]['e']:
-			bisect.insort(setofeClosures, eclosure)
+	setofeClosures.append(NFAstate)
+	if (NFAstate in tranFunctions):
+		if ('e' in  tranFunctions[NFAstate]):
+			for eclosure in tranFunctions[NFAstate]['e']:
+				bisect.insort(setofeClosures, eclosure)
 	return setofeClosures
 	
 def addState(state):
-	bisect.insort(setOfStates, state)
+	setOfStates.append(state)
 	
 # DFA start state = NFA start state and set of states w/in e-closure from start state
 addState(eTransitions(startState))
-
+DFAstates = DFAstates + 1
 DFAstartState = str(setOfStates[0])
 
 # 2) For every new state R (previous step and every alphabet char delta,
 #	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
-def getTransitions(currState):
-	DFAtransitions[str(setOfStates[currState])] = {}
-	for symbol in alphabet:
-		destinationStates = []
-		for state in setOfStates[currState]:
-			if (symbol in tranFunctions[state]):
-				for destination in tranFunctions[state][symbol]:
-					bisect.insort(destinationStates, destination)
-					#	(2.b) If DFA did not already have T as state, add it as new state and go back to #2
-					if not (destinationStates in setOfStates):
-						#bisect.insort(setOfStates, destinationStates)
-						addState(destinationStates)
-						# need to figure out how to make this loop up to number 2 above at this line
-		DFAtransitions[DFAstartState][symbol] = destinationStates
+def eClosure(currState):
+	setofeClosures = []
+	for NFAstate in currState:
+		for tran in eTransitions(NFAstate):
+			if not (tran in setofeClosures):
+				bisect.insort(setofeClosures, tran)
+	return setofeClosures
 
-getTransitions(0)
+def addTransitions(i):
+	DFAtransitions[str(setOfStates[i])] = {}     # Create entry in transitions dictionary for [each] start state
+	for symbol in alphabet:                      # and for every alphabet character...
+		destinationStates = []                   # ...make a subdictionary entry	
+		for state in setOfStates[i]:             # (a) Compute Epsilon closure. 
+			if (state in tranFunctions):
+				if (symbol in tranFunctions[state]): 
+			# Add transitions function of each NFAstate in DFAstates
+					for destination in tranFunctions[state][symbol]:   
+						bisect.insort(destinationStates, destination)
+			DFAtransitions[DFAstartState][symbol] = destinationStates # ...and here is where it gets put into DFAtransitions
+		# (2.b) If DFA did not already have T as state, add it as new state and go back to #2                 
+		# Compute e-closure for each state getting added to DFAtransitions
+			if not (eClosure(destinationStates) in setOfStates):       # This is where the destination state
+				setOfStates.append(eClosure(destinationStates))        # (of transition) gets added to setOfStates[]
+				addTransitions(i)
 
+i = 0
+while i < len(setOfStates):
+	addTransitions(i)
+	i += 1
+print("\nTest line\n setOfStates size: "+str(len(setOfStates)))
+	
 # 3) Done adding new states when Step two yields no new states
 DFAstates = len(setOfStates)
 
@@ -174,13 +189,14 @@ with open(outputFilename, 'w') as outFile:
 	for symbol in alphabet:                   # Alphabet
 		outFile.write(str(symbol))
 	for inState in DFAtransitions:            # Transition Functions
-		for inSymbol in DFAtransitions[inState]:
+		for inSymbol in alphabet:
 		#  1) read-in state
-			outFile.write('\n'+str(inState)+" \'")
+			outFile.write('\n'+inState+" \'")
 		#  2) read-in symbol
 			outFile.write(inSymbol+"\' ")
 		#  3) go-to state
-			outFile.write(str(DFAtransitions[inState][inSymbol]))
+			if (inSymbol in DFAtransitions[inState]):
+				outFile.write(str(DFAtransitions[inState][inSymbol]))
 	outFile.write('\n'+DFAstartState+'\n')    # Start States
 	# TEST BELOW TO WRITES WITH NFA, NEED TO UPDATE TO DFA
 	for state in acceptStates:             # Accept States
@@ -197,6 +213,7 @@ print()
 print("NFA TESTS\n")
 print("Test line\n name of test file: " + inputFilename + "\n")
 print("Test line\n number of states in NFA: " + str(numStates))
+print()
 print("Test line\n alphabet: " , alphabet)
 print()
 print("Test line\n transition functions: ", tranFunctions)
