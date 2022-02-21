@@ -11,7 +11,7 @@ numStates = 0         # size of Q (number of states in set)
 alphabet = []         # Sigma
 tranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
 startState = 0        # qs (initial state of NFA)
-acceptStates = []     # F (set of end states that will return "Accept")
+NFAacceptStates = []  # F (set of end states that will return "Accept")
 #inputStrings = []    # Set of strings tested on NFA
 
 
@@ -80,7 +80,7 @@ startState = int(nextLine)
 acceptInput = inputFile.readline()
 for eachState in acceptInput.split(" "):
 	eachState = int(eachState)
-	acceptStates.append(eachState)
+	NFAacceptStates.append(eachState)
 #	if "" in acceptStates:
 #		acceptStates.remove("")
 	
@@ -168,9 +168,13 @@ while stateCounter < len(setOfStates):
 # 3) Done adding new states when Step two yields no new states
 DFAstates = len(setOfStates)
 
-
 # 4) Make every DFA state that contains NFA state into DFA accept state
 #	(only consider states & transitions reachable from start state)
+for eachAccept in NFAacceptStates:
+	for eachState in setOfStates:
+		for eachNFA in eachState:
+			if (eachAccept == eachNFA):
+				DFAacceptStates.append(setOfStates.index(eachState) + 1)
 
 
 ########################
@@ -193,7 +197,7 @@ with open(outputFilename, 'w') as outFile:
 	lookupStartState = setOfStates.index(DFAstartState) + 1
 	outFile.write('\n'+str(lookupStartState)+'\n')    # Start States
 	# TEST BELOW TO WRITES WITH NFA, NEED TO UPDATE TO DFA
-	for state in acceptStates:             # Accept States
+	for state in DFAacceptStates:             # Accept States
 		outFile.write(str(state)+' ')
 	
 outFile.close()
