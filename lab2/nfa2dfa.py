@@ -158,20 +158,19 @@ def addTransitions(i):
 			if (state in tranFunctions):
 				if (symbol in tranFunctions[state]): 
 			# Add transitions function of each NFAstate in DFAstates
-					for destination in tranFunctions[state][symbol]:   
-						bisect.insort(destinationStates, destination)
+					for destination in tranFunctions[state][symbol]:
+						if not (destination in destinationStates):
+							bisect.insort(destinationStates, destination)
 			DFAtransitions[DFAstartState][symbol] = destinationStates # ...and here is where it gets put into DFAtransitions
 		# (2.b) If DFA did not already have T as state, add it as new state and go back to #2                 
 		# Compute e-closure for each state getting added to DFAtransitions
-			if not (eClosure(destinationStates) in setOfStates):       # This is where the destination state
-				setOfStates.append(eClosure(destinationStates))        # (of transition) gets added to setOfStates[]
-				addTransitions(i)
+		if not (eClosure(destinationStates) in setOfStates):       # This is where the destination state
+			setOfStates.append(eClosure(destinationStates))        # (of transition) gets added to setOfStates[]
 
 i = 0
 while i < len(setOfStates):
 	addTransitions(i)
 	i += 1
-print("\nTest line\n setOfStates size: "+str(len(setOfStates)))
 	
 # 3) Done adding new states when Step two yields no new states
 DFAstates = len(setOfStates)
@@ -226,11 +225,12 @@ print()
 print("\nDFA TESTS")
 print("\nTest line\n start state of DFA (e-closures): ")
 print(DFAstartState)
-print()
-print("Test line\n transitions from start state: ")
-for symbol in alphabet:
-	print("on "+symbol+" go to:")
-	print(DFAtransitions[DFAstartState][symbol])
+# print()
+#print()
+#print("Test line\n transitions from start state: ")
+#for symbol in alphabet:
+#	print("on "+symbol+" go to:")
+#	print(DFAtransitions[DFAstartState][symbol])
 print()
 print("Test line\n set of states:")
 print(setOfStates)
