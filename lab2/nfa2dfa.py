@@ -114,8 +114,8 @@ def eClosure(DFAState):
 				bisect.insort(setofeClosures, tran)
 	return setofeClosures
 	
-def addState(state):
-	setOfStates.append(state)
+def addState(DFAstate):
+	setOfStates.append(DFAstate)
 	
 # DFA start state = NFA start state and set of states w/in e-closure from start state
 DFAstartState = eClosure(eTransitions(startState))
@@ -207,13 +207,18 @@ print("Test line\n number of states in NFA: " + str(numStates))
 print()
 print("Test line\n alphabet: " , alphabet)
 print()
-print("Test line\n transition functions: ", tranFunctions)
+print("Test line\n transition functions: ")
+for state in tranFunctions:
+		for symbol in tranFunctions[state]:
+			print(str(state)+"  \'"+symbol+"\' "+str(tranFunctions[state][symbol]))
 print()
 print("Test line\n start state is: " + str(startState) + "\n")
 print("Test line\n accept states: " , NFAacceptStates)
 print()
 print("\nDFA TESTS")
-print("\nTest line\n start state of DFA (e-closures): ")
+print("\nTest line\n DFAStates: "+str(DFAstates))
+print()
+print("Test line\n start state of DFA (e-closures): ")
 print(DFAstartState)
 print("transitions from start state:")
 for symbol in alphabet:
@@ -223,6 +228,11 @@ print("Test line\n set of states:")
 print(setOfStates)
 print()
 print("Test line\n DFAtransitions:")
-print(DFAtransitions)
+#print(DFAtransitions)
+for state in DFAtransitions:
+		for symbol in alphabet:
+			print(str(state)+"  \'"+symbol+"\' "+str(DFAtransitions[str(state)][symbol]))
+print()
+print("Test line\n Accept States: "+str(DFAacceptStates))
 print()
 ######################################################################
