@@ -115,7 +115,8 @@ def eClosure(DFAState):
 	return setofeClosures
 	
 def addState(DFAstate):
-	setOfStates.append(DFAstate)
+	if not (DFAstate in setOfStates): # only add if state not already in data structure
+		setOfStates.append(DFAstate)
 	
 # DFA start state = NFA start state and set of states w/in e-closure from start state
 DFAstartState = eClosure(eTransitions(startState))
@@ -140,13 +141,11 @@ def addTransitions(i):
 							bisect.insort(destinationStates, destination)
 	# ...and here is where it gets put into DFAtransitions
 		DFAtransitions[currState][symbol] = destinationStates 
-		if not (destinationStates in setOfStates):
-			addState(destinationStates)
-		
+
 	# (2.b) If DFA did not already have T as state, add it as new state and go back to #2                 
+		addState(destinationStates) # addState() automatically checks for duplicates
 	# Compute e-closure for each state getting added to DFAtransitions
-		if not (eClosure(destinationStates) in setOfStates):  # This is where the destination state
-			addState(eClosure(destinationStates))     # (of transition) gets added to setOfStates[]
+		addState(eClosure(destinationStates))
 
 # Loop through set of DFA states 
 # and add transitions and states as needed
