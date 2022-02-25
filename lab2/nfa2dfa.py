@@ -17,7 +17,6 @@ NFAacceptStates = []  # F (set of end states that will return "Accept")
 ##########################
 # Check for input errors #
 ##########################
-
 # Command line should have 3 arguments (nfa.py and test_case and output_file)
 #  Execute format: python3 nfa.py <testcase>.txt <output>.txt
 numArgs = len(sys.argv)
@@ -84,6 +83,7 @@ for eachState in acceptInput.split(" "):
 inputFile.close()
 
 
+
 ################
 # Creating DFA #
 ################
@@ -115,13 +115,12 @@ def eClosure(DFAState):
 	return setofeClosures
 	
 def addState(DFAstate):
-	if not (DFAstate in setOfStates): # only add if state not already in data structure
+	if not (DFAstate in setOfStates):    # only add if state not already in data structure
 		setOfStates.append(DFAstate)
 	
 # DFA start state = NFA start state and set of states w/in e-closure from start state
 DFAstartState = eClosure(eTransitions(startState))
 addState(DFAstartState)
-DFAstates = DFAstates + 1
 
 # 2) For every new state R (previous step and every alphabet char delta,
 #	(2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
@@ -139,14 +138,14 @@ def addTransitions(i):
 					for destination in tranFunctions[state][symbol]:
 						if not (destination in destinationStates):
 							bisect.insort(destinationStates, destination)
-	# ...and here is where it gets put into DFAtransitions
+	# Compute e-closure for each state getting added to DFAtransitions
+		destinationStates = (eClosure(destinationStates))
+	# ...and add this to the transition functions	
 		DFAtransitions[currState][symbol] = destinationStates 
 
 	# (2.b) If DFA did not already have T as state, add it as new state and go back to #2                 
-		addState(destinationStates) # addState() automatically checks for duplicates
-	# Compute e-closure for each state getting added to DFAtransitions
-		addState(eClosure(destinationStates))
-
+		addState(destinationStates)      # addState() automatically checks for duplicates
+	
 # Loop through set of DFA states 
 # and add transitions and states as needed
 stateCounter = 0
@@ -166,15 +165,20 @@ for eachAccept in NFAacceptStates:
 				DFAacceptStates.append(setOfStates.index(eachState) + 1)
 
 
+
 ########################
 # Write to Output File #
 ########################
+
 with open(outputFilename, 'w') as outFile:
+
 # 1) Set of States
 	outFile.write(str(DFAstates)+'\n')        
+
 # 2) Alphabet
 	for symbol in alphabet:                   
 		outFile.write(str(symbol))
+
 # 3) Transition Functions
 	for i in range(len(setOfStates)):
 		for inSymbol in alphabet:
@@ -185,9 +189,11 @@ with open(outputFilename, 'w') as outFile:
 		#  3) go-to state
 			go2state = DFAtransitions[str(setOfStates[i])][inSymbol]
 			outFile.write(str(setOfStates.index(go2state) + 1))
+
 # 4) Start States
 	lookupStartState = setOfStates.index(DFAstartState) + 1
 	outFile.write('\n'+str(lookupStartState)+'\n')    
+
 # 5) Accept States
 	for state in DFAacceptStates:                     
 		outFile.write(str(state) + ' ')
@@ -199,39 +205,38 @@ outFile.close()
 #########################################
 # Test lines: delete before submitting  #
 ######################################################################
-print()
-print("NFA TESTS\n")
-print("Test line\n name of test file: " + inputFilename + "\n")
-print("Test line\n number of states in NFA: " + str(numStates))
-print()
-print("Test line\n alphabet: " , alphabet)
-print()
-print("Test line\n transition functions: ")
-for state in tranFunctions:
-		for symbol in tranFunctions[state]:
-			print(str(state)+"  \'"+symbol+"\' "+str(tranFunctions[state][symbol]))
-print()
-print("Test line\n start state is: " + str(startState) + "\n")
-print("Test line\n accept states: " , NFAacceptStates)
-print()
-print("\nDFA TESTS")
-print("\nTest line\n DFAStates: "+str(DFAstates))
-print()
-print("Test line\n start state of DFA (e-closures): ")
-print(DFAstartState)
-print("transitions from start state:")
-for symbol in alphabet:
-	print(str(symbol)+" "+str(DFAtransitions[str(DFAstartState)][symbol]))
-print()
-print("Test line\n set of states:")
-print(setOfStates)
-print()
-print("Test line\n DFAtransitions:")
-#print(DFAtransitions)
-for state in DFAtransitions:
-		for symbol in alphabet:
-			print(str(state)+"  \'"+symbol+"\' "+str(DFAtransitions[str(state)][symbol]))
-print()
-print("Test line\n Accept States: "+str(DFAacceptStates))
-print()
+#print()
+#print("NFA TESTS\n")
+#print("Test line\n name of test file: " + inputFilename + "\n")
+#print("Test line\n number of states in NFA: " + str(numStates))
+#print()
+#print("Test line\n alphabet: " , alphabet)
+#print()
+#print("Test line\n transition functions: ")
+#for state in tranFunctions:
+#		for symbol in tranFunctions[state]:
+#			print(str(state)+"  \'"+symbol+"\' "+str(tranFunctions[state][symbol]))
+#print()
+#print("Test line\n start state is: " + str(startState) + "\n")
+#print("Test line\n accept states: " , NFAacceptStates)
+#print()
+#print("\nDFA TESTS")
+#print("\nTest line\n DFAStates: "+str(DFAstates))
+#print()
+#print("Test line\n start state of DFA (e-closures): ")
+#print(DFAstartState)
+#print("transitions from start state:")
+#for symbol in alphabet:
+#	print(str(symbol)+" "+str(DFAtransitions[str(DFAstartState)][symbol]))
+#print()
+#print("Test line\n set of states:")
+#print(setOfStates)
+#print()
+#print("Test line\n DFAtransitions:")
+#for state in DFAtransitions:
+#		for symbol in alphabet:
+#			print(str(state)+"  \'"+symbol+"\' "+str(DFAtransitions[str(state)][symbol]))
+#print()
+#print("Test line\n Accept States: "+str(DFAacceptStates))
+#print()
 ######################################################################
