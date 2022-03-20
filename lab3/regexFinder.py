@@ -30,7 +30,7 @@ inputStrings = []  # set of strings tested on DFA
 
 # define data structures
 class NFA: 
-	def _init_(self, numStates, alphabet, tranFunctions, startState, acceptStates):
+	def __init__(self, numStates, alphabet, tranFunctions, startState, acceptStates):
 		self.numStates = numStates
 		self.alphabet = alphabet
 		self.tranFunctions = tranFunctions
@@ -38,7 +38,7 @@ class NFA:
 		self.acceptStates = acceptStates
 
 class DFA:
-	def _init_(self, numStates, alphabet, tranFunctions, startState, acceptStates):
+	def __init__(self, numStates, alphabet, tranFunctions, startState, acceptStates):
 		self.numStates = numStates
 		self.alphabet = alphabet
 		self.tranFunctions = tranFunctions
@@ -79,15 +79,11 @@ outputFilename = sys.argv[2]
 #  0) The input file name is the first command line argument.
 inputFile = open(inputFilename, "r")
 
-# 1)The alphabet of the language appears by itself on the fist line of the input file. Every
-#	character in the line (not including the terminating newline character, or any space
-#	characters) is a symbol of the alphabet. The alphabet cannot include the letter e,
-#	the letter N, the symbol *, the symbol j, or the left or right parenthesis, as these
-#	have specific meanings in the regular expressions.
-alphaInput = inputFile.readline()
-for eachChar in range(len(alphaInput)):
-	alphabet.append(alphaInput[eachChar])
-alphabet.remove("\n")
+# 1)The alphabet of the language appears by itself on the fist line of the input file.
+alphaInput = inputFile.readline()          # Every character in the line (not including the terminating newline character, or any space
+for eachChar in range(len(alphaInput)):    # characters) is a symbol of the alphabet. The alphabet cannot include the letter e,
+	alphabet.append(alphaInput[eachChar])  # the letter N, the symbol *, the symbol j, or the left or right parenthesis, as these
+alphabet.remove("\n")                      # have specific meanings in the regular expressions.
 
 # 2) A regular expression appears by itself on the second line of the input file.
 nextLine = inputFile.readline()
@@ -103,6 +99,53 @@ while (nextLine):
 	nextLine = inputFile.readline();
 
 inputFile.close()
+
+
+############################################################################################
+# 1) Convert the regular expression to an equivalent NFA, using the algorithm described in #
+# 	class and in the textbook.                                                             #
+############################################################################################
+myNFA = {}
+
+#<conversion code goes here>#
+
+#<...in the meantime...dummy variables below>###################################
+numStates = 0         # size of Q (number of states in set)
+#alphabet = []         # Sigma
+tranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
+startState = 0        # qs (initial state of NFA)
+acceptStates = []  # F (set of end states that will return "Accept")
+#<end dummy variables block>####################################################
+
+myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
+
+
+
+###########################################################################################
+# 2) Convert the NFA into an equivalent DFA, using the algorithm described in class and   #
+# 	in the textbook. Here, you can use the code you wrote for PA2, but you will not write #
+# 	the DFA to a file - keep it in memory.                                                #
+###########################################################################################
+myDFA = {}
+
+#<conversion code goes here>#
+
+#<...in the meantime...dummy variables below>###################################
+DnumStates = 0         # size of Q (number of states in set)
+#alphabet = []         # Sigma
+DtranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
+DstartState = 0        # qs (initial state of NFA)
+DacceptStates = []  # F (set of end states that will return "Accept")
+#<end dummy variables block>####################################################
+
+myDFA = DFA(DnumStates, alphabet, DtranFunctions, DstartState, DacceptStates)
+
+# 3) For each of the strings, determine if it is in the language of the DFA by simulating the
+# 	DFA on the string. Here, you can use the code you wrote of PA1, but you will get the
+# 	DFA from memory, and not from a file. You will write the results to a file, which will
+# 	have one line per string, indicating if the string is ("true") or is not ("false") in the
+#	language of the regular expression.
+
 
 
 ########################
@@ -131,6 +174,7 @@ inputFile.close()
 # Test lines: delete before submitting  #
 ######################################################################
 print()
+print("\nRegex Tests\n")
 print("Test line\n name of test file: " + inputFilename)
 #print()
 print("Test line\n regex: " + regex)
@@ -138,5 +182,27 @@ print("Test line\n regex: " + regex)
 print("Test line\n alphabet: " , alphabet)
 #print()
 print("Test line \n input strings: " , inputStrings)
+print()
+print("\nNFA Tests\n")
+print("Test line\n NFA numState: "+str(myNFA.numStates))
+#print()
+print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
+#print()
+print("Test line\n NFA tranFunctions: "+str(myNFA.tranFunctions))
+#print()
+print("Test line\n NFA startState: "+str(myNFA.startState))
+#print()
+print("Test line\n NFA acceptState: "+str(myNFA.acceptStates))
+print()
+print("\nDFA Tests\n")
+print("Test line\n DFA numState: "+str(myDFA.numStates))
+#print()
+print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
+#print()
+print("Test line\n DFA tranFunctions: "+str(myDFA.tranFunctions))
+#print()
+print("Test line\n DFA startState: "+str(myDFA.startState))
+#print()
+print("Test line\n DFA acceptState: "+str(myDFA.acceptStates))
 print()
 ######################################################################
