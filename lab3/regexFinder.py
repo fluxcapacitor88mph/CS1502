@@ -126,25 +126,105 @@ myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
 # 	in the textbook. Here, you can use the code you wrote for PA2, but you will not write #
 # 	the DFA to a file - keep it in memory.                                                #
 ###########################################################################################
+
 myDFA = {}
 
-#<conversion code goes here>#
+def nfa2dfa(thisNFA):
+	
+	# DFA Properties
+	DFAstates = 0            # size of Q (number of states in set)
+	#alphabet = alphabet     # Alphabet is same for NFA and DFA
+	DFAtransitions = {}      # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
+	DFAstartState = 0        # qs (initial state of DFA)
+	DFAacceptStates = []     # F (set of end states that will return "Accept")
+	setOfStates = []         # Dictionary of DFA states based on PowerSet(NFA states)
 
-#<...in the meantime...dummy variables below>###################################
-DnumStates = 0         # size of Q (number of states in set)
-#alphabet = []         # Sigma
-DtranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
-DstartState = 0        # qs (initial state of NFA)
-DacceptStates = []  # F (set of end states that will return "Accept")
-#<end dummy variables block>####################################################
+	# 2.1) Create the start state of the DFA, which is E(q0), where q0 is the NFA start state and E(.) is the e-closure)
+	def eTransitions(NFAstate):
+		setofeClosures = []     
+		setofeClosures.append(NFAstate)
+		if (NFAstate in thisNFA.tranFunctions):
+			if ('e' in  thisNFA.tranFunctions[NFAstate]):
+				for eclosure in thisNFA.tranFunctions[NFAstate]['e']:
+					bisect.insort(setofeClosures, eclosure)
+		return setofeClosures
 
-myDFA = DFA(DnumStates, alphabet, DtranFunctions, DstartState, DacceptStates)
+	def eClosure(DFAState):
+		setofeClosures = []
+		for NFAstate in DFAState:
+			for tran in eTransitions(NFAstate):
+				if not (tran in setofeClosures):
+					bisect.insort(setofeClosures, tran)
+		return setofeClosures
+		
+	def addState(DFAstate):
+		if not (DFAstate in setOfStates):    # only add if state not already in data structure
+			setOfStates.append(DFAstate)
+			
+	# DFA start state = NFA start state and set of states w/in e-closure from start state
+	DFAstartState = eClosure(eTransitions(thisNFA.startState))
+	addState(DFAstartState)
 
-# 3) For each of the strings, determine if it is in the language of the DFA by simulating the
-# 	DFA on the string. Here, you can use the code you wrote of PA1, but you will get the
-# 	DFA from memory, and not from a file. You will write the results to a file, which will
-# 	have one line per string, indicating if the string is ("true") or is not ("false") in the
-#	language of the regular expression.
+	# 2.2) For every new state R (previous step and every alphabet char delta,
+	#	(2.2.a) Compute U(reR)E(delta(r,sigma)) & compute e-closure. Add transtion delt(R,sig) = T
+	def addTransitions(i):
+		currState = str(setOfStates[i])
+		DFAtransitions[currState] = {}     
+	# Create entry in transitions dictionary for [each] start state
+		for symbol in alphabet:              # and for every alphabet character...
+			destinationStates = []           # ...make a subdictionary entry	
+		# (a) Compute Epsilon closure. 
+			for state in setOfStates[i]:     
+				if (state in thisNFA.tranFunctions):
+					if (symbol in thisNFA.tranFunctions[state]): 
+		# Add transitions function of each NFAstate in DFAstates array...
+						for destination in thisNFA.tranFunctions[state][symbol]:
+							if not (destination in destinationStates):
+								bisect.insort(destinationStates, destination)
+		# Compute e-closure for each state getting added to DFAtransitions
+			destinationStates = (eClosure(destinationStates))
+		# ...and add this to the transition functions	
+			DFAtransitions[currState][symbol] = destinationStates 
+
+		# (2.2.b) If DFA did not already have T as state, add it as new state and go back to #2                 
+			addState(destinationStates)      # addState() automatically checks for duplicates
+
+	# Loop through set of DFA states 
+	# and add transitions and states as needed
+	stateCounter = 0
+	while stateCounter < len(setOfStates):
+		addTransitions(stateCounter)
+		stateCounter += 1
+
+	# 2.3) Done adding new states when Step two yields no new states
+	DFAstates = len(setOfStates)
+
+	# 2.4) Make every DFA state that contains NFA state into DFA accept state
+	#	(only consider states & transitions reachable from start state)
+	for eachAccept in thisNFA.acceptStates:
+		for eachState in setOfStates:
+			for eachNFA in eachState:
+				if (eachAccept == eachNFA):
+					DFAacceptStates.append(setOfStates.index(eachState) + 1)
+
+
+# need to add conversion of set of state and transition funciton arrays
+
+	return DFA(DFAstates, alphabet, DFAtransitions, DFAstartState, DFAacceptStates)
+
+# Run nfa2dfa on our nfa from earlier
+myDFA = nfa2dfa(myNFA)
+
+
+###############################################################################################
+# 3) For each of the strings, determine if it is in the language of the DFA by simulating the #
+# 	DFA on the string. Here, you can use the code you wrote of PA1, but you will get the      #
+# 	DFA from memory, and not from a file. You will write the results to a file, which will    #
+# 	have one line per string, indicating if the string is ("true") or is not ("false") in the #
+#	language of the regular expression.                                                       #
+###############################################################################################
+
+#<code here>#
 
 
 
