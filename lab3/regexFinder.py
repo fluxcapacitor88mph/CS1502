@@ -38,12 +38,26 @@ class NFA:
 		self.acceptStates = acceptStates
 
 class DFA:
-	def __init__(self, numStates, alphabet, tranFunctions, startState, acceptStates):
+	def __init__(self, numStates, alphabet, tranFunctions, startState, acceptStates, setOfStates):
 		self.numStates = numStates
 		self.alphabet = alphabet
 		self.tranFunctions = tranFunctions
 		self.startState = startState
 		self.acceptStates = acceptStates
+		self.setOfStates = setOfStates
+		
+	def read_string(self, input_str):
+		# trace the input string on the DFA
+		curr = self.startState
+		for ch in input_str:
+			if not (ch in alphabet):
+				return False
+			curr = self.tranFunctions[str(curr)][ch]
+		# test if string ended on accept state	
+		if (curr in self.acceptStates):
+			return True
+		else:
+			return False
 
 
 # The program should read input from a file that is specifed as the first com-
@@ -110,11 +124,11 @@ myNFA = {}
 #<conversion code goes here>#
 
 #<...in the meantime...dummy variables below>###################################
-numStates = 0         # size of Q (number of states in set)
-#alphabet = []         # Sigma
-tranFunctions = {}    # [dictionary] delta (qa 'char' qb) => [Q][Sig] -> Q
-startState = 0        # qs (initial state of NFA)
-acceptStates = []  # F (set of end states that will return "Accept")
+numStates = 7        # size of Q (number of states in set)
+alphabet =  ['d', 'g']        # Sigma
+tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
+startState = 7        # qs (initial state of NFA)
+acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
 #<end dummy variables block>####################################################
 
 myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
@@ -208,9 +222,29 @@ def nfa2dfa(thisNFA):
 					DFAacceptStates.append(setOfStates.index(eachState) + 1)
 
 
-# need to add conversion of set of state and transition funciton arrays
+	# 2.5) Need to convert transition function dictionary, start states, and accept states
+	# 	2.5.1) Convert Transition Function
+	convertedTransitions = {}
+	for i in range(len(setOfStates)):
+		T_index = str(i+1)
+	#  1) read-in state
+		convertedTransitions[T_index] = {}
+		for inSymbol in alphabet:
+	#  2) read-in symbol
+			convertedTransitions[T_index][inSymbol] = {}
+	#  3) go-to state
+			go2state = DFAtransitions[str(setOfStates[i])][inSymbol]
+			convertedTransitions[T_index][inSymbol] = setOfStates.index(go2state) + 1
+	
+	#	2.5.2) Convert Start States Array
+	convertedStartState = setOfStates.index(DFAstartState) + 1
+	
+	#	2.5.3) Convert Accept States Array
+	convertedAcceptStates = []
+	for state in DFAacceptStates:                     
+		convertedAcceptStates.append(state)
 
-	return DFA(DFAstates, alphabet, DFAtransitions, DFAstartState, DFAacceptStates)
+	return DFA(DFAstates, alphabet, convertedTransitions, convertedStartState, convertedAcceptStates, setOfStates)
 
 # Run nfa2dfa on our nfa from earlier
 myDFA = nfa2dfa(myNFA)
@@ -224,28 +258,29 @@ myDFA = nfa2dfa(myNFA)
 #	language of the regular expression.                                                       #
 ###############################################################################################
 
-#<code here>#
-
-
-
 ########################
 # Write to Output File #
 ########################
 
 # 0) The output file name is the second command line argument.
-#with open(outputFilename, 'w') as outFile:
+with open(outputFilename, 'w') as outFile:
 
 # 1) Your program should write true or false for each string in the input file,
 # 	true if the string is in the language described by the regular expression,
 # 	and false if not. The output file should contain one true or false value per
 # 	line.
+	for each_input in inputStrings:
+		if (myDFA.read_string(each_input)):
+			outFile.write("true\n")
+		else:
+			outFile.write("false\n")
 
 # 2) If an invalid regular expression is encountered, your program should print
 # 	"Invalid expression" to the output file on a single line. Nothing else should
 # 	be printed to the file.
 	
 
-#outFile.close()
+outFile.close()
 
 
 
@@ -254,8 +289,9 @@ myDFA = nfa2dfa(myNFA)
 # Test lines: delete before submitting  #
 ######################################################################
 print()
-print("\nRegex Tests\n")
 print("Test line\n name of test file: " + inputFilename)
+print()
+print("\nRegex Tests\n")
 #print()
 print("Test line\n regex: " + regex)
 #print()
@@ -272,17 +308,23 @@ print("Test line\n NFA tranFunctions: "+str(myNFA.tranFunctions))
 #print()
 print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
-print("Test line\n NFA acceptState: "+str(myNFA.acceptStates))
+print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
 print()
 print("\nDFA Tests\n")
 print("Test line\n DFA numState: "+str(myDFA.numStates))
 #print()
 print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
 #print()
-print("Test line\n DFA tranFunctions: "+str(myDFA.tranFunctions))
+print("Test line\n DFA tranFunctions: ")
+#print(str(myDFA.tranFunctions))
+for state in myDFA.tranFunctions:
+	for symbol in alphabet:
+		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
 #print()
 print("Test line\n DFA startState: "+str(myDFA.startState))
 #print()
-print("Test line\n DFA acceptState: "+str(myDFA.acceptStates))
+print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
+#print()
+print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
 print()
 ######################################################################
