@@ -121,44 +121,98 @@ inputFile.close()
 ############################################################################################
 myNFA = {}
 
-#<conversion code goes here>#
-
 #Here is how you will convert the regular expression into an equivalent NFA:
 
 # 1. Parse the regular expression into an abstract syntax tree. In an abstract syntax tree,
 # the interior nodes represent the operators, and the leaf nodes represent symbols in the
 # alphabet. The children of the interior nodes are the operand(s) of the operator. Here
 # is how you will construct the syntax tree:
+class STNode:
+	def __init__(self, value):
+		self.left = None
+		self.right = None
+		self.value = value
+		
+	def isLeaf(self):
+		if (self.left==None and self.right==None):
+			return True
+		else:
+			return False
+			
+	def addNode(self, newNode):
+		if (newNode.value < self.value):
+			if (self.left is None):
+				self.left = newNode
+			else:
+				self.left.addNode(newNode)
+		if (newNode.value > self.value):
+			if (self.right is None):
+				self.right = newNode
+			else:
+				self.right.addNode(newNode)
 
+class syntax_tree:
+	def __init__(self, root):
+		self.root = root
+		
+	def addNode(self, newNode):
+		if (self.root is None):
+			self.root = newNode
+		else:
+			self.root.addNode(newNode)
+
+	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
 #		nodes in the syntax tree; and an operator stack that will contain operators (plus
 #		the left parenthesis).
 operands = []
 operators = []
+myAST = syntax_tree(None)
+
+def peek(arr):
+	if (len(arr) < 1):
+		return None
+	else:
+		return len(arr) - 1
 
 #	(b) Scan the regular expression character by character, ignoring space characters.
 #		i. If a symbol from the alphabet is encountered, then create a syntax tree node
 #			containing that symbol, and push it onto the operand stack.
 for ch in regex:
 	if (ch in alphabet):
-		operands.append(ch)
-
+		newNode = STNode(ch)
+		myAST.addNode(newNode)
+		operands.append(newNode)
 #		ii. If a left paren is encountered, then push it onto the operator stack.
-
+	if (ch == '('):
+		operators.append(ch)
 #		iii. If an operator (star, union, or implied concatenation) is encountered, then,
 #			as long as the stack is not empty, and the top of the stack is an operator
-#			is precedence is greater than or equal to the precedence of the operator just
-#			scanned, pop the operator offthe stack and create a syntax tree node from it
+#			whose precedence is greater than or equal to the precedence of the operator just
+#			scanned, pop the operator off the stack and create a syntax tree node from it
 #			(popping its operand(s) off the operand stack), and push the new syntax tree
 #			node back onto the operand stack. When either the stack is empty, or the
 #			top of the stack is not an operator with precedence greater than or equal to
 #			the precedence of the operator just scanned, push the operator just scanned
 #			onto the operator stack.
+	if (ch=='*' or ch=='|'):
+		operators.append(ch)
+
+# 		<need more here>
+
 
 #		iv. If a right parenthesis is encountered, then pop operators off the operator stack
 #			until the left parenthesis is popped off the operator stack. For each operator
 #			popped off the stack, create a new syntax tree node from it (popping its
 #			operand(s) off the operand stack), and push it onto the operand stack.
+	if (ch==')'):
+		curr = peek(operators)
+		while not (curr=='(' or curr==None):
+			operators.pop()
+			curr = peek(operators)
+
+# 		<need more here>
+
 
 #	(c) Empty the operator stack. For each operator popped off the stack, create a new
 #		syntax tree node from it (popping its operand(s) off the operand stack), and push
@@ -167,7 +221,8 @@ for ch in regex:
 #	(d) Pop the root of the syntax tree off of the operand stack.
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
-#		nate parsing an print the error message to the output file as described above.
+#		nate parsing and print the error message to the output file as described above.
+
 
 # 2. Create an NFA from the abstract syntax tree by doing a depth-first traversal of the
 #	syntax tree. (Remember here that each node of the syntax tree is the root of a sub-
@@ -359,6 +414,15 @@ print("Test line\n regex: " + regex)
 print("Test line\n alphabet: " , alphabet)
 #print()
 print("Test line \n input strings: " , inputStrings)
+#print()
+print("Test line\n operands: ", end='')
+for each_oper in operands:
+	print(str(each_oper.value), end = ', ')
+print()
+print("Test line\n operators: "+str(operators))
+#print()
+#print("Test line\n AST: ")
+#print(str(myAST))
 print()
 print("\nNFA Tests\n")
 print("Test line\n NFA numState: "+str(myNFA.numStates))
@@ -366,7 +430,10 @@ print("Test line\n NFA numState: "+str(myNFA.numStates))
 print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
 #print()
 print("Test line\n NFA tranFunctions: ")
-print(str(myNFA.tranFunctions))
+#print(str(myNFA.tranFunctions))
+for state in myNFA.tranFunctions:
+	for symbol in myNFA.tranFunctions[state]:
+		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
 #print()
 print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
@@ -387,6 +454,6 @@ print("Test line\n DFA startState: "+str(myDFA.startState))
 #print()
 print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
 #print()
-print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
+#print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
 print()
 ######################################################################
