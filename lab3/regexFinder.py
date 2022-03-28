@@ -147,7 +147,36 @@ class STNode:
 	def __init__(self, value):
 		self.left = None
 		self.right = None
-		self.value = value	
+		self.value = value
+
+	def isLeaf(self):
+		if (self.left==None and self.right==None):
+			return True
+		else:
+			return False
+			
+	def traverse(self):
+		# 0. base case
+		if self.isLeaf():
+			return print(self.value,end=" ")
+		# 1. Kleene Star
+		elif (self.value == '*'):
+			self.right.traverse()
+			print(self.value,end=" ")
+		# 2. Concat or Union
+		else:
+			self.left.traverse()
+			print(self.value,end=" ")
+			self.right.traverse()
+
+class syntax_tree:
+	def __init__(self, root):
+		self.root = root
+
+	def traverse(self):
+		print("",end="")
+		if not (self.root is None):
+			self.root.traverse()
 	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
 #		nodes in the syntax tree; and an operator stack that will contain operators (plus
@@ -163,19 +192,19 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(in_regex):
-	step=0
+#	step=0
 	for ch in in_regex:
 
-		print()
-		print("State "+str(step))
-		print("operands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
-		print()
-		print("read char: "+ch)
-		step+=1
+#		print()
+#		print("State "+str(step))
+#		print("operands:", end=" [ ")
+#		for each_oper in operands:
+#			print("'"+str(each_oper.value), end = "' ")
+#		print("]")
+#		print("operators: "+str(operators))
+#		print()
+#		print("read char: "+ch)
+#		step+=1
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
@@ -246,14 +275,14 @@ def empty_stack(stack):
 	step=0
 	while not (curr is None):
 		
-		print("emptyState: "+str(step))
-		print("operands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
-		print()
-		step+=1
+#		print("emptyState: "+str(step))
+#		print("operands:", end=" [ ")
+#		for each_oper in operands:
+#			print("'"+str(each_oper.value), end = "' ")
+#		print("]")
+#		print("operators: "+str(operators))
+#		print()
+#		step+=1
 	
 		newNode = STNode(operators.pop())
 		newNode.right = operands.pop()
@@ -264,16 +293,26 @@ def empty_stack(stack):
 		curr = peek(operators)
 
 # Run empty stack function
-print("\nRun empty_stack():")
+#print("\nRun empty_stack():")
 empty_stack(operators)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
+myTree = syntax_tree(None)
 if not (peek(operands) == None):
-	operands.pop()
+	myTree = syntax_tree(operands.pop())
+#if (myTree.root is None):
+#	print("root node: "+str(myTree.root))
+#else:	
+#	print("root node: "+str(myTree.root.value))
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
 #		nate parsing and print the error message to the output file as described above.
-
+valid_expression = True
+if (valid_expression == False):
+	with open(outputFilename, 'w') as outFile:
+		outFile.write("Invalid expression")
+	outFile.close()
+	sys.exit()
 
 # 2. Create an NFA from the abstract syntax tree by doing a depth-first traversal of the
 #	syntax tree. (Remember here that each node of the syntax tree is the root of a sub-
@@ -283,6 +322,10 @@ if not (peek(operands) == None):
 #	create. If the node is an interior node (representing an operator), then the NFA is
 #	created from the NFA's of the child nodes using the constructions described in section
 #	1.2 of the text (under \closure under the regular operations").
+print("\nDepth First Traversal of Tree")
+myTree.traverse()
+
+
 
 # 3. And now you have an NFA equivalent to the regular expression.
 
@@ -410,6 +453,7 @@ def nfa2dfa(thisNFA):
 
 	return DFA(DFAstates, alphabet, convertedTransitions, convertedStartState, convertedAcceptStates, setOfStates)
 
+
 # Run nfa2dfa on our nfa from earlier
 myDFA = nfa2dfa(myNFA)
 
@@ -465,7 +509,7 @@ print("Test line\n convertedRegex: " + str(convertedRegex))
 #print()
 print("Test line\n alphabet: " , alphabet)
 #print()
-print("Test line \n input strings: " , inputStrings)
+#print("Test line \n input strings: " , inputStrings)
 #print()
 #print("Test line\n operands: ", end='[ ')
 #for each_oper in operands:
