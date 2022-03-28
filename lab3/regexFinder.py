@@ -115,7 +115,7 @@ while (nextLine):
 
 inputFile.close()
 
-#  4) Convert regex to include "implied" concatenation
+#  4) Convert regex to include "implied" concatenations
 convertedRegex = []
 for i in range(len(regex)):
 	convertedRegex.append(regex[i])
@@ -162,12 +162,14 @@ def peek(stack):
 		return stack[len(stack) - 1]
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
-def scan_regex(regex):
+def scan_regex(in_regex):
 	step=0
-	for ch in regex:
-	
+	for ch in in_regex:
+		
+		step+=1
 		print()
 		print("Step "+str(step))
+		print("ch: "+ch)
 		print("operands:", end=" [ ")
 		for each_oper in operands:
 			print("'"+str(each_oper.value), end = "' ")
@@ -181,7 +183,7 @@ def scan_regex(regex):
 			operands.append(newNode)
 
 	# ii. If a left paren is encountered, then push it onto the operator stack.
-		if (ch == '('):
+		elif (ch == '('):
 			operators.append(ch)
 
 	# iii. If an operator (star, union, or implied concatenation) is encountered, then,
@@ -189,56 +191,51 @@ def scan_regex(regex):
 	#	whose precedence is greater than or equal to the precedence of the operator just
 	#	scanned, pop the operator off the stack and create a syntax tree node from it
 	#	(popping its operand(s) off the operand stack), and push the new syntax tree
-	#	node back onto the operand stack. When either the stack is empty, or the
+	#	node back onto the operand stack. 
+	
+	#	When either the stack is empty, or the
 	#	top of the stack is not an operator with precedence greater than or equal to
 	#	the precedence of the operator just scanned, push the operator just scanned
 	#	onto the operator stack.
-		if (ch=='*' or ch=='|' or ch=='&'):
-			if not (peek(operators) is None):
-		# 		<need more here>
-				operators.pop()
-				newNode = STNode(ch)
-				newNode.right = operands.pop()
-				newNode.left = operands.pop()
-				operands.append(newNode)
-				#curr = peek(operators)
-			
-			if (peek(operators) is None):
+		elif (ch=='|' or ch=='&' or ch=='*'):  # precedence: | < & < *
+			# Not empty or no operator of greater precedence
+			if ((peek(operators) is None) or ch=='*'):
 				operators.append(ch)
 
+			elif (ch=='&' and not (peek(operators)=='*')):
+				operators.append(ch)
+
+			elif (ch=='|' and not (peek(operators)=='&' or peek(operators)=='*')):
+				operators.append(ch)
+			
+			else:
+				newNode = STNode(operators.pop())
+				newNode.right = operands.pop()
+				if not (newNode.value == "*"):
+					newNode.left = operands.pop()
+				operands.append(newNode)
+				operators.append(ch)
 
 	# iv. If a right parenthesis is encountered, then pop operators off the operator stack
 	#	until the left parenthesis is popped off the operator stack. For each operator
 	#	popped off the stack, create a new syntax tree node from it (popping its
 	#	operand(s) off the operand stack), and push it onto the operand stack.
-		if (ch==')'):
+		elif (ch==')'):
 			curr = peek(operators)
-			while not (curr == '('):
-				operators.pop()
-				newNode = STNode(curr)
+			while not (curr == '(' or (curr is None)):
+				newNode = STNode(operators.pop())
 				newNode.right = operands.pop()
-				newNode.left = operands.pop()
+				if not (newNode.value == "*"):
+					newNode.left = operands.pop()
+				
 				operands.append(newNode)
 				curr = peek(operators)
 
 			if (curr == '('):
 				operators.pop()
-				newNode = STNode(curr)
-				newNode.right = operands.pop()
-				newNode.left = operands.pop()
-				operands.append(newNode)
-				
-	step+=1
-	print()
-	print("Step "+str(step))
-	print("operands:", end=" [ ")
-	for each_oper in operands:
-		print("'"+str(each_oper.value), end = "' ")
-	print("]")
-	print("operators: "+str(operators))
 
 # convert regex to abstract search tree
-#scan_regex(convertedRegex)
+scan_regex(convertedRegex)
 
 #	(c) Empty the operator stack. For each operator popped off the stack, create a new
 #		syntax tree node from it (popping its operand(s) off the operand stack), and push
@@ -246,23 +243,16 @@ def scan_regex(regex):
 def empty_stack(stack):
 	curr = peek(operators)
 	while not (curr is None):
-		print("\noperands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
-		
-		operators.pop()
-		print("curr: "+curr)
-		newNode = STNode(curr)
-		print("right: "+str(peek(operands).value))
+		newNode = STNode(operators.pop())
 		newNode.right = operands.pop()
-		print("left: "+str(peek(operands).value))
-		newNode.left = operands.pop()
+		if not (newNode.value == "*"):
+			newNode.left = operands.pop()
+		
 		operands.append(newNode)
 		curr = peek(operators)
 
-#empty_stack(operator)
+# Run empty stack function
+empty_stack(operators)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
 if not (peek(operands) == None):
