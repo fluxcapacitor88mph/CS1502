@@ -132,36 +132,7 @@ class STNode:
 	def __init__(self, value):
 		self.left = None
 		self.right = None
-		self.value = value
-		
-#	def isLeaf(self):
-#		if (self.left==None and self.right==None):
-#			return True
-#		else:
-#			return False
-#			
-#	def addNode(self, newNode):
-#		if (newNode.value < self.value):
-#			if (self.left is None):
-#				self.left = newNode
-#			else:
-#				self.left.addNode(newNode)
-#		if (newNode.value > self.value):
-#			if (self.right is None):
-#				self.right = newNode
-#			else:
-#				self.right.addNode(newNode)
-#
-#class syntax_tree:
-#	def __init__(self, root):
-#		self.root = root
-#		
-#	def addNode(self, newNode):
-#		if (self.root is None):
-#			self.root = newNode
-#		else:
-#			self.root.addNode(newNode)
-
+		self.value = value	
 	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
 #		nodes in the syntax tree; and an operator stack that will contain operators (plus
@@ -177,17 +148,17 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(regex):
-	step=0
+#	step=0
 	for ch in regex:
 		
-		step+=1
-		print()
-		print("Step "+str(step))
-		print("operands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
+#		step+=1
+#		print()
+#		print("Step "+str(step))
+#		print("operands:", end=" [ ")
+#		for each_oper in operands:
+#			print("'"+str(each_oper.value), end = "' ")
+#		print("]")
+#		print("operators: "+str(operators))
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
