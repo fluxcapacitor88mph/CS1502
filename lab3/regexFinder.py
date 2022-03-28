@@ -119,6 +119,7 @@ inputFile.close()
 # 1) Convert the regular expression to an equivalent NFA, using the algorithm described in #
 # 	class and in the textbook.                                                             #
 ############################################################################################
+
 myNFA = {}
 
 #Here is how you will convert the regular expression into an equivalent NFA:
@@ -133,33 +134,33 @@ class STNode:
 		self.right = None
 		self.value = value
 		
-	def isLeaf(self):
-		if (self.left==None and self.right==None):
-			return True
-		else:
-			return False
-			
-	def addNode(self, newNode):
-		if (newNode.value < self.value):
-			if (self.left is None):
-				self.left = newNode
-			else:
-				self.left.addNode(newNode)
-		if (newNode.value > self.value):
-			if (self.right is None):
-				self.right = newNode
-			else:
-				self.right.addNode(newNode)
-
-class syntax_tree:
-	def __init__(self, root):
-		self.root = root
-		
-	def addNode(self, newNode):
-		if (self.root is None):
-			self.root = newNode
-		else:
-			self.root.addNode(newNode)
+#	def isLeaf(self):
+#		if (self.left==None and self.right==None):
+#			return True
+#		else:
+#			return False
+#			
+#	def addNode(self, newNode):
+#		if (newNode.value < self.value):
+#			if (self.left is None):
+#				self.left = newNode
+#			else:
+#				self.left.addNode(newNode)
+#		if (newNode.value > self.value):
+#			if (self.right is None):
+#				self.right = newNode
+#			else:
+#				self.right.addNode(newNode)
+#
+#class syntax_tree:
+#	def __init__(self, root):
+#		self.root = root
+#		
+#	def addNode(self, newNode):
+#		if (self.root is None):
+#			self.root = newNode
+#		else:
+#			self.root.addNode(newNode)
 
 	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
@@ -167,58 +168,99 @@ class syntax_tree:
 #		the left parenthesis).
 operands = []
 operators = []
-myAST = syntax_tree(None)
 
-def peek(arr):
-	if (len(arr) < 1):
+def peek(stack):
+	if (len(stack) < 1):
 		return None
 	else:
-		return len(arr) - 1
+		return stack[len(stack) - 1]
 
-#	(b) Scan the regular expression character by character, ignoring space characters.
-#		i. If a symbol from the alphabet is encountered, then create a syntax tree node
-#			containing that symbol, and push it onto the operand stack.
-for ch in regex:
-	if (ch in alphabet):
-		newNode = STNode(ch)
-		myAST.addNode(newNode)
-		operands.append(newNode)
-#		ii. If a left paren is encountered, then push it onto the operator stack.
-	if (ch == '('):
-		operators.append(ch)
-#		iii. If an operator (star, union, or implied concatenation) is encountered, then,
-#			as long as the stack is not empty, and the top of the stack is an operator
-#			whose precedence is greater than or equal to the precedence of the operator just
-#			scanned, pop the operator off the stack and create a syntax tree node from it
-#			(popping its operand(s) off the operand stack), and push the new syntax tree
-#			node back onto the operand stack. When either the stack is empty, or the
-#			top of the stack is not an operator with precedence greater than or equal to
-#			the precedence of the operator just scanned, push the operator just scanned
-#			onto the operator stack.
-	if (ch=='*' or ch=='|'):
-		operators.append(ch)
+#	(b) Scan the regular expression character by character, ignoring space characters.	
+def scan_regex(regex):
+	step=0
+	for ch in regex:
+		
+		step+=1
+		print()
+		print("Step "+str(step))
+		print("operands:", end=" [ ")
+		for each_oper in operands:
+			print("'"+str(each_oper.value), end = "' ")
+		print("]")
+		print("operators: "+str(operators))
 
-# 		<need more here>
+	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
+	#	containing that symbol, and push it onto the operand stack.	
+		if (ch in alphabet):
+			newNode = STNode(ch)
+			operands.append(newNode)
+
+	# ii. If a left paren is encountered, then push it onto the operator stack.
+		if (ch == '('):
+			operators.append(ch)
+
+	# iii. If an operator (star, union, or implied concatenation) is encountered, then,
+	#	as long as the stack is not empty, and the top of the stack is an operator
+	#	whose precedence is greater than or equal to the precedence of the operator just
+	#	scanned, pop the operator off the stack and create a syntax tree node from it
+	#	(popping its operand(s) off the operand stack), and push the new syntax tree
+	#	node back onto the operand stack. When either the stack is empty, or the
+	#	top of the stack is not an operator with precedence greater than or equal to
+	#	the precedence of the operator just scanned, push the operator just scanned
+	#	onto the operator stack.
+		if (ch=='*' or ch=='|'):
+			if not (peek(operators) is None):
+		# 		<need more here>
+				operators.pop()
+				newNode = STNode(ch)
+				newNode.right = operands.pop()
+				newNode.left = operands.pop()
+				operands.append(newNode)
+				#curr = peek(operators)
+			
+			if (peek(operators) is None):
+				operators.append(ch)
 
 
-#		iv. If a right parenthesis is encountered, then pop operators off the operator stack
-#			until the left parenthesis is popped off the operator stack. For each operator
-#			popped off the stack, create a new syntax tree node from it (popping its
-#			operand(s) off the operand stack), and push it onto the operand stack.
-	if (ch==')'):
-		curr = peek(operators)
-		while not (curr=='(' or curr==None):
-			operators.pop()
+	# iv. If a right parenthesis is encountered, then pop operators off the operator stack
+	#	until the left parenthesis is popped off the operator stack. For each operator
+	#	popped off the stack, create a new syntax tree node from it (popping its
+	#	operand(s) off the operand stack), and push it onto the operand stack.
+		if (ch==')'):
 			curr = peek(operators)
+			while not (curr == '('):
+				operators.pop()
+				newNode = STNode(curr)
+				newNode.right = operands.pop()
+				newNode.left = operands.pop()
+				operands.append(newNode)
+				curr = peek(operators)
 
-# 		<need more here>
+			if (curr == '('):
+				operators.pop()
+				newNode = STNode(curr)
+				newNode.right = operands.pop()
+				newNode.left = operands.pop()
+				operands.append(newNode)
 
+# convert regex to abstract search tree
+#scan_regex(regex)
 
 #	(c) Empty the operator stack. For each operator popped off the stack, create a new
 #		syntax tree node from it (popping its operand(s) off the operand stack), and push
 #		it onto the operand stack.
+curr = peek(operators)
+while not (curr is None):
+	operators.pop()
+	newNode = STNode(curr)
+	newNode.right = operands.pop()
+	newNode.left = operands.pop()
+	operands.append(newNode)
+	curr = peek(operators)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
+if not (peek(operands) == None):
+	operands.pop()
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
 #		nate parsing and print the error message to the output file as described above.
@@ -415,9 +457,10 @@ print("Test line\n alphabet: " , alphabet)
 #print()
 print("Test line \n input strings: " , inputStrings)
 #print()
-print("Test line\n operands: ", end='')
+print("Test line\n operands: ", end='[ ')
 for each_oper in operands:
-	print(str(each_oper.value), end = ', ')
+	print("'"+str(each_oper.value), end = "' ")
+print("]")
 print()
 print("Test line\n operators: "+str(operators))
 #print()
