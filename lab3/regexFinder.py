@@ -102,6 +102,7 @@ alphabet.remove("\n")                      # have specific meanings in the regul
 # 2) A regular expression appears by itself on the second line of the input file.
 nextLine = inputFile.readline()
 regex = nextLine.replace("\n", "")
+regex = regex.replace(" ", "")
 
 #  3) Following the regular expressions are a sequence of strings, one per line for the remain-
 #	der of the input file.
@@ -113,6 +114,20 @@ while (nextLine):
 	nextLine = inputFile.readline();
 
 inputFile.close()
+
+#  4) Convert regex to include "implied" concatenation
+convertedRegex = []
+for i in range(len(regex)):
+	convertedRegex.append(regex[i])
+	if not (i==len(regex)-1):
+		if not (regex[i]=='|' or regex[i]=='(') and (regex[i+1] in alphabet):
+			convertedRegex.append('&')
+		elif (regex[i] in alphabet) and (regex[i+1]=='('):
+			convertedRegex.append('&')
+		elif (regex[i]==')') and not (regex[i+1]=='|' or regex[i+1]=='*' or regex[i+1]==')'):
+			convertedRegex.append('&')
+		elif (regex[i]=='*') and ( regex[i+1]=='(' or (regex[i+1] in alphabet) ):
+			convertedRegex.append('&')
 
 
 ############################################################################################
@@ -148,17 +163,16 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(regex):
-#	step=0
+	step=0
 	for ch in regex:
-		
-#		step+=1
-#		print()
-#		print("Step "+str(step))
-#		print("operands:", end=" [ ")
-#		for each_oper in operands:
-#			print("'"+str(each_oper.value), end = "' ")
-#		print("]")
-#		print("operators: "+str(operators))
+	
+		print()
+		print("Step "+str(step))
+		print("operands:", end=" [ ")
+		for each_oper in operands:
+			print("'"+str(each_oper.value), end = "' ")
+		print("]")
+		print("operators: "+str(operators))
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
@@ -179,7 +193,7 @@ def scan_regex(regex):
 	#	top of the stack is not an operator with precedence greater than or equal to
 	#	the precedence of the operator just scanned, push the operator just scanned
 	#	onto the operator stack.
-		if (ch=='*' or ch=='|'):
+		if (ch=='*' or ch=='|' or ch=='&'):
 			if not (peek(operators) is None):
 		# 		<need more here>
 				operators.pop()
@@ -213,21 +227,42 @@ def scan_regex(regex):
 				newNode.right = operands.pop()
 				newNode.left = operands.pop()
 				operands.append(newNode)
+				
+	step+=1
+	print()
+	print("Step "+str(step))
+	print("operands:", end=" [ ")
+	for each_oper in operands:
+		print("'"+str(each_oper.value), end = "' ")
+	print("]")
+	print("operators: "+str(operators))
 
 # convert regex to abstract search tree
-#scan_regex(regex)
+#scan_regex(convertedRegex)
 
 #	(c) Empty the operator stack. For each operator popped off the stack, create a new
 #		syntax tree node from it (popping its operand(s) off the operand stack), and push
 #		it onto the operand stack.
-curr = peek(operators)
-while not (curr is None):
-	operators.pop()
-	newNode = STNode(curr)
-	newNode.right = operands.pop()
-	newNode.left = operands.pop()
-	operands.append(newNode)
+def empty_stack(stack):
 	curr = peek(operators)
+	while not (curr is None):
+		print("\noperands:", end=" [ ")
+		for each_oper in operands:
+			print("'"+str(each_oper.value), end = "' ")
+		print("]")
+		print("operators: "+str(operators))
+		
+		operators.pop()
+		print("curr: "+curr)
+		newNode = STNode(curr)
+		print("right: "+str(peek(operands).value))
+		newNode.right = operands.pop()
+		print("left: "+str(peek(operands).value))
+		newNode.left = operands.pop()
+		operands.append(newNode)
+		curr = peek(operators)
+
+#empty_stack(operator)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
 if not (peek(operands) == None):
@@ -423,6 +458,7 @@ print()
 print("\nRegex Tests\n")
 #print()
 print("Test line\n regex: " + regex)
+print("Test line\n convertedRegex: " + str(convertedRegex))
 #print()
 print("Test line\n alphabet: " , alphabet)
 #print()
