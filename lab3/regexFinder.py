@@ -120,12 +120,16 @@ convertedRegex = []
 for i in range(len(regex)):
 	convertedRegex.append(regex[i])
 	if not (i==len(regex)-1):
+		
 		if not (regex[i]=='|' or regex[i]=='(') and (regex[i+1] in alphabet):
 			convertedRegex.append('&')
+		
 		elif (regex[i] in alphabet) and (regex[i+1]=='('):
 			convertedRegex.append('&')
+		
 		elif (regex[i]==')') and not (regex[i+1]=='|' or regex[i+1]=='*' or regex[i+1]==')'):
 			convertedRegex.append('&')
+		
 		elif (regex[i]=='*') and ( regex[i+1]=='(' or (regex[i+1] in alphabet) ):
 			convertedRegex.append('&')
 
@@ -154,15 +158,34 @@ class STNode:
 			return True
 		else:
 			return False
-			
+
+#	For each node, an NFA is created that is
+#	equivalent to the regular expression represented by the subtree rooted at the node. 
 	def traverse(self):
 		# 0. base case
+		# 	If the node is a leaf node, then we have a base case, and the NFA is straightforward to
+		#	create. 
 		if self.isLeaf():
-			return print(self.value,end=" ")
+			print(self.value,end=" ")
+			# 0.1 - Empty String
+			if (self.value == 'e'):
+				return NFA(1, alphabet, {1: {self.value: [1]}}, 1, [self])
+			# 0.2 - Empty Set
+			elif (self.value == 'N'):
+				return NFA(1, alphabet, {1: {self.value: [1]}}, 1, [])
+			# 0.3 - Symbol in alphabet
+			else:
+				return NFA(2, alphabet, {1: {self.value: [2]}}, 1, [2])
+
+		#	If the node is an interior node (representing an operator), then the NFA is
+		#	created from the NFA's of the child nodes using the constructions described in section
+		#	1.2 of the text (under \closure under the regular operations").			
+
 		# 1. Kleene Star
 		elif (self.value == '*'):
 			self.right.traverse()
 			print(self.value,end=" ")
+		
 		# 2. Concat or Union
 		else:
 			self.left.traverse()
@@ -174,6 +197,9 @@ class syntax_tree:
 		self.root = root
 
 	def traverse(self):
+	# 2. Create an NFA from the abstract syntax tree by doing a depth-first traversal of the
+	#	syntax tree. (Remember here that each node of the syntax tree is the root of a sub-
+	#	tree that represents a regular expression.) 
 		print("",end="")
 		if not (self.root is None):
 			self.root.traverse()
@@ -222,7 +248,7 @@ def scan_regex(in_regex):
 	#	scanned, pop the operator off the stack and create a syntax tree node from it
 	#	(popping its operand(s) off the operand stack), and push the new syntax tree
 	#	node back onto the operand stack. 
-	
+	#
 	#	When either the stack is empty, or the
 	#	top of the stack is not an operator with precedence greater than or equal to
 	#	the precedence of the operator just scanned, push the operator just scanned
@@ -322,8 +348,17 @@ if (valid_expression == False):
 #	create. If the node is an interior node (representing an operator), then the NFA is
 #	created from the NFA's of the child nodes using the constructions described in section
 #	1.2 of the text (under \closure under the regular operations").
-print("\nDepth First Traversal of Tree")
-myTree.traverse()
+#print("\nDepth First Traversal of Tree")
+myNFA = myTree.traverse()
+#print("\nmyNFA")
+#if (myNFA is None):
+#	print("myNFA is empty\n")
+#print("numStates: "+str(myNFA.numStates))
+#print("alphabet: "+str(myNFA.alphabet))
+#print("transitiosn: "+str(myNFA.tranFunctions))
+#print("start state: "+str(myNFA.startState))
+#print("accept states: "+str(myNFA.acceptStates))
+#print()
 
 
 
