@@ -27,6 +27,7 @@ import sys, fileinput, os.path, bisect
 alphabet = []      # used for regex, NFA, and DFA
 regex = ""         # will be converted to an NFA, and then a DFA
 inputStrings = []  # set of strings tested on DFA
+states = 0         # size of Q (number of states in set)
 
 # define data structures
 class NFA: 
@@ -159,9 +160,11 @@ class STNode:
 		else:
 			return False
 
-#	For each node, an NFA is created that is
-#	equivalent to the regular expression represented by the subtree rooted at the node. 
 	def traverse(self):
+	#	For each node, an NFA is created that is
+	#	equivalent to the regular expression represented by the subtree rooted at the node. 
+		global states
+		
 		# 0. base case
 		# 	If the node is a leaf node, then we have a base case, and the NFA is straightforward to
 		#	create. 
@@ -169,13 +172,16 @@ class STNode:
 			print(self.value,end=" ")
 			# 0.1 - Empty String
 			if (self.value == 'e'):
-				return NFA(1, alphabet, {1: {self.value: [1]}}, 1, [self])
+				states+=1
+				return NFA(states, alphabet, {1: {self.value: [1]}}, 1, [1])
 			# 0.2 - Empty Set
 			elif (self.value == 'N'):
-				return NFA(1, alphabet, {1: {self.value: [1]}}, 1, [])
+				states+=1
+				return NFA(states, alphabet, {1: {self.value: [1]}}, 1, [])
 			# 0.3 - Symbol in alphabet
 			else:
-				return NFA(2, alphabet, {1: {self.value: [2]}}, 1, [2])
+				states+=2
+				return NFA(states, alphabet, {1: {self.value: [2]}}, 1, [2])
 
 		#	If the node is an interior node (representing an operator), then the NFA is
 		#	created from the NFA's of the child nodes using the constructions described in section
@@ -183,11 +189,15 @@ class STNode:
 
 		# 1. Kleene Star
 		elif (self.value == '*'):
+			states+=1
+			# add transition function
 			self.right.traverse()
 			print(self.value,end=" ")
 		
 		# 2. Concat or Union
 		else:
+			states+=2
+			#add transition functions
 			self.left.traverse()
 			print(self.value,end=" ")
 			self.right.traverse()
@@ -197,12 +207,9 @@ class syntax_tree:
 		self.root = root
 
 	def traverse(self):
-	# 2. Create an NFA from the abstract syntax tree by doing a depth-first traversal of the
-	#	syntax tree. (Remember here that each node of the syntax tree is the root of a sub-
-	#	tree that represents a regular expression.) 
 		print("",end="")
 		if not (self.root is None):
-			self.root.traverse()
+			return self.root.traverse()
 	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
 #		nodes in the syntax tree; and an operator stack that will contain operators (plus
@@ -234,7 +241,7 @@ def scan_regex(in_regex):
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
-		if (ch in alphabet):
+		if ((ch in alphabet) or (ch=='e') or (ch=='N')):
 			newNode = STNode(ch)
 			operands.append(newNode)
 
@@ -323,13 +330,14 @@ def empty_stack(stack):
 empty_stack(operators)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
+print()
 myTree = syntax_tree(None)
 if not (peek(operands) == None):
 	myTree = syntax_tree(operands.pop())
-#if (myTree.root is None):
-#	print("root node: "+str(myTree.root))
-#else:	
-#	print("root node: "+str(myTree.root.value))
+if (myTree.root is None):
+	print("root node: "+str(myTree.root))
+else:	
+	print("root node: "+str(myTree.root.value))
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
 #		nate parsing and print the error message to the output file as described above.
@@ -348,32 +356,37 @@ if (valid_expression == False):
 #	create. If the node is an interior node (representing an operator), then the NFA is
 #	created from the NFA's of the child nodes using the constructions described in section
 #	1.2 of the text (under \closure under the regular operations").
-#print("\nDepth First Traversal of Tree")
+print("\nDepth First Traversal of Tree")
+#numStates = 0        # size of Q (number of states in set)
+#alphabet =  ['d', 'g']        # Sigma
+#tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
+#startState = 7        # qs (initial state of NFA)
+#acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
+
 myNFA = myTree.traverse()
-#print("\nmyNFA")
-#if (myNFA is None):
-#	print("myNFA is empty\n")
-#print("numStates: "+str(myNFA.numStates))
-#print("alphabet: "+str(myNFA.alphabet))
-#print("transitiosn: "+str(myNFA.tranFunctions))
-#print("start state: "+str(myNFA.startState))
-#print("accept states: "+str(myNFA.acceptStates))
-#print()
-
-
+print()
+print("\nmyNFA")
+if (myNFA is None):
+	print("myNFA is empty\n")
+print("numStates: "+str(myNFA.numStates))
+print("alphabet: "+str(myNFA.alphabet))
+print("transitiosn: "+str(myNFA.tranFunctions))
+print("start state: "+str(myNFA.startState))
+print("accept states: "+str(myNFA.acceptStates))
+print()
 
 # 3. And now you have an NFA equivalent to the regular expression.
-
-
 #<...in the meantime...dummy variables below>###################################
-numStates = 7        # size of Q (number of states in set)
+#numStates = 7        # size of Q (number of states in set)
 #alphabet =  ['d', 'g']        # Sigma
-tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
-startState = 7        # qs (initial state of NFA)
-acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
+#tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
+#startState = 7        # qs (initial state of NFA)
+#acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
+
+#myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
 #<end dummy variables block>####################################################
 
-myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
+
 
 
 
@@ -544,8 +557,8 @@ print("Test line\n convertedRegex: " + str(convertedRegex))
 #print()
 print("Test line\n alphabet: " , alphabet)
 #print()
-#print("Test line \n input strings: " , inputStrings)
-#print()
+print("Test line \n input strings: " , inputStrings)
+print()
 #print("Test line\n operands: ", end='[ ')
 #for each_oper in operands:
 #	print("'"+str(each_oper.value), end = "' ")
@@ -556,20 +569,20 @@ print("Test line\n alphabet: " , alphabet)
 #print("Test line\n AST: ")
 #print(str(myAST))
 #print()
-#print("\nNFA Tests\n")
-#print("Test line\n NFA numState: "+str(myNFA.numStates))
+print("\nNFA Tests\n")
+print("Test line\n NFA numState: "+str(myNFA.numStates))
 #print()
-#print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
+print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
 #print()
-#print("Test line\n NFA tranFunctions: ")
+print("Test line\n NFA tranFunctions: ")
 #print(str(myNFA.tranFunctions))
-#for state in myNFA.tranFunctions:
-#	for symbol in myNFA.tranFunctions[state]:
-#		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
+for state in myNFA.tranFunctions:
+	for symbol in myNFA.tranFunctions[state]:
+		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
 #print()
-#print("Test line\n NFA startState: "+str(myNFA.startState))
+print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
-#print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
+print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
 #print()
 #print("\nDFA Tests\n")
 #print("Test line\n DFA numState: "+str(myDFA.numStates))
