@@ -27,7 +27,6 @@ import sys, fileinput, os.path, bisect
 alphabet = []      # used for regex, NFA, and DFA
 regex = ""         # will be converted to an NFA, and then a DFA
 inputStrings = []  # set of strings tested on DFA
-states = 0         # size of Q (number of states in set)
 
 # define data structures
 class NFA: 
@@ -141,6 +140,90 @@ for i in range(len(regex)):
 ############################################################################################
 
 myNFA = {}
+#myNFA = NFA(0, alphabet, {}, 0, [])
+states = 0    # size of Q in NFA
+
+def mergeTrans(leftTrans, rightTrans):
+	newTrans = leftTrans
+	print()
+	print("left: "+str(leftTrans))
+	print("right: "+str(rightTrans))
+	for each_in in rightTrans:
+		newTrans[each_in] = {}
+		for each_symbol in rightTrans[each_in]:
+			newTrans[each_in][each_symbol] = rightTrans[each_in][each_symbol]
+	print("new: "+str(newTrans))
+	return newTrans
+	
+def mergeAccepts(leftAccepts, rightAccepts):
+	newAccepts = leftAccepts
+	print()
+	print("left: "+str(leftAccepts))
+	print("right: "+str(rightAccepts))
+	for each_accept in rightAccepts:
+		if not(each_accept in newAccepts):
+			bisect.insort(newAccepts, each_accept)
+	print("new: "+str(newAccepts))
+	return newAccepts
+
+def star(someNFA):
+	print()
+	print("someTrans: "+str(someNFA.tranFunctions))
+	global states
+	starTrans = someNFA.tranFunctions
+	
+	# add e-transitions for each accept state of someNFA
+	# to start state of someNFA
+	for each_accept in someNFA.acceptStates:
+		starTrans[each_accept] = {}
+		starTrans[each_accept]['e'] = [someNFA.startState]
+	print("starTrans: "+str(starTrans))
+	
+	# add new start state and have it e-transition
+	# to original start state
+	states =+ 1
+	starTrans[states] = {}
+	starTrans[states]['e'] = [someNFA.startState]
+	print("starTrans: "+str(starTrans))
+	
+	# add new start state to the set
+	# of accept states 
+	starAccepts = someNFA.acceptStates
+	bisect.insort(starAccepts, states)
+	
+	starNFA = NFA(states, alphabet, starTrans, states, starAccepts)
+	print("STAR")
+	return starNFA
+
+def concat(leftNFA, rightNFA):
+	global states
+	concatTrans = mergeTrans(leftNFA.tranFunctions, rightNFA.tranFunctions)
+	
+	# add e-transitions for each accept state of leftNFA
+	# to start state of rightNFA
+	for each_accept in leftNFA.acceptStates:
+		concatTrans[each_accept] = {}
+		concatTrans[each_accept]['e'] = [rightNFA.startState]
+	print("concatTrans: "+str(concatTrans))
+	
+	concatAccepts = rightNFA.acceptStates
+	concatNFA = NFA(states, alphabet, concatTrans, states, concatAccepts)
+	print("CONCAT")
+	return concatNFA
+
+def union(leftNFA, rightNFA):
+	print()
+	global states
+	states =+ 1
+		# A) add new start state #
+		# B) add e transition from new start state to each start start state of 
+		# 	leftNFA and rightNFA
+	unionTrans = mergeTrans(leftNFA.tranFunctions, rightNFA.tranFunctions)
+	unionAccepts = mergeAccepts(leftNFA.acceptStates, rightNFA.acceptStates)
+	unionNFA = NFA(states, alphabet, unionTrans, states, unionAccepts)
+	print("UNION")
+	return unionNFA
+
 
 #Here is how you will convert the regular expression into an equivalent NFA:
 
@@ -160,28 +243,28 @@ class STNode:
 		else:
 			return False
 
-	def traverse(self):
+	def makeNFA(self):
 	#	For each node, an NFA is created that is
 	#	equivalent to the regular expression represented by the subtree rooted at the node. 
 		global states
-		
+	
 		# 0. base case
 		# 	If the node is a leaf node, then we have a base case, and the NFA is straightforward to
 		#	create. 
 		if self.isLeaf():
-			print(self.value,end=" ")
+			#print(self.value,end=" ")
 			# 0.1 - Empty String
 			if (self.value == 'e'):
 				states+=1
-				return NFA(states, alphabet, {1: {self.value: [1]}}, 1, [1])
+				return NFA(states, alphabet, {}, states, [states])
 			# 0.2 - Empty Set
 			elif (self.value == 'N'):
 				states+=1
-				return NFA(states, alphabet, {1: {self.value: [1]}}, 1, [])
+				return NFA(states, alphabet, {}, states, [])
 			# 0.3 - Symbol in alphabet
 			else:
 				states+=2
-				return NFA(states, alphabet, {1: {self.value: [2]}}, 1, [2])
+				return NFA(states, alphabet, {states-1: {self.value: [states]}}, states-1, [states])
 
 		#	If the node is an interior node (representing an operator), then the NFA is
 		#	created from the NFA's of the child nodes using the constructions described in section
@@ -189,27 +272,33 @@ class STNode:
 
 		# 1. Kleene Star
 		elif (self.value == '*'):
-			states+=1
-			# add transition function
-			self.right.traverse()
-			print(self.value,end=" ")
+			someNFA = self.right.makeNFA()
+			return star(someNFA)
 		
-		# 2. Concat or Union
+		# 2. Concat
+		elif (self.value == '&'):
+			leftNFA = self.left.makeNFA()
+			rightNFA = self.right.makeNFA()
+			return concat(leftNFA, rightNFA)
+			
+		# 3. Union
+		elif (self.value == '|'):
+			leftNFA = self.left.makeNFA()
+			rightNFA = self.right.makeNFA()
+			return union(leftNFA, rightNFA)
+			
+		# 4. Invalid Expression
 		else:
-			states+=2
-			#add transition functions
-			self.left.traverse()
-			print(self.value,end=" ")
-			self.right.traverse()
+			sys.exit("\nThis is invalid. Fix output file.\n")
 
 class syntax_tree:
 	def __init__(self, root):
 		self.root = root
 
-	def traverse(self):
+	def makeNFA(self):
 		print("",end="")
 		if not (self.root is None):
-			return self.root.traverse()
+			return self.root.makeNFA()
 	
 #	(a) Create two initially empty stacks: a operand stack that will contain references to
 #		nodes in the syntax tree; and an operator stack that will contain operators (plus
@@ -326,18 +415,12 @@ def empty_stack(stack):
 		curr = peek(operators)
 
 # Run empty stack function
-#print("\nRun empty_stack():")
 empty_stack(operators)
 
 #	(d) Pop the root of the syntax tree off of the operand stack.
-print()
 myTree = syntax_tree(None)
 if not (peek(operands) == None):
 	myTree = syntax_tree(operands.pop())
-if (myTree.root is None):
-	print("root node: "+str(myTree.root))
-else:	
-	print("root node: "+str(myTree.root.value))
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
 #		nate parsing and print the error message to the output file as described above.
@@ -356,37 +439,11 @@ if (valid_expression == False):
 #	create. If the node is an interior node (representing an operator), then the NFA is
 #	created from the NFA's of the child nodes using the constructions described in section
 #	1.2 of the text (under \closure under the regular operations").
-print("\nDepth First Traversal of Tree")
-#numStates = 0        # size of Q (number of states in set)
-#alphabet =  ['d', 'g']        # Sigma
-#tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
-#startState = 7        # qs (initial state of NFA)
-#acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
 
-myNFA = myTree.traverse()
-print()
-print("\nmyNFA")
-if (myNFA is None):
-	print("myNFA is empty\n")
-print("numStates: "+str(myNFA.numStates))
-print("alphabet: "+str(myNFA.alphabet))
-print("transitiosn: "+str(myNFA.tranFunctions))
-print("start state: "+str(myNFA.startState))
-print("accept states: "+str(myNFA.acceptStates))
-print()
+
 
 # 3. And now you have an NFA equivalent to the regular expression.
-#<...in the meantime...dummy variables below>###################################
-#numStates = 7        # size of Q (number of states in set)
-#alphabet =  ['d', 'g']        # Sigma
-#tranFunctions = {3: {'d': [4]}, 2: {'d': [2, 3], 'g': [2]}, 5: {'g': [5, 6], 'd': [5]}, 7: {'d': [7], 'g': [7], 'e': [2, 5]}, 6: {'g': [7]}}
-#startState = 7        # qs (initial state of NFA)
-#acceptStates =  [4, 1]  # F (set of end states that will return "Accept")
-
-#myNFA = NFA(numStates, alphabet, tranFunctions, startState, acceptStates)
-#<end dummy variables block>####################################################
-
-
+myNFA = myTree.makeNFA()
 
 
 
