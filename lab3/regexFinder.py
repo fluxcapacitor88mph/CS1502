@@ -52,7 +52,8 @@ class DFA:
 		for ch in input_str:
 			if not (ch in alphabet):
 				return False
-			curr = self.tranFunctions[str(curr)][ch]
+			#curr = self.tranFunctions[str(curr)][ch]
+			curr = self.tranFunctions[curr][ch]
 		# test if string ended on accept state	
 		if (curr in self.acceptStates):
 			return True
@@ -146,52 +147,58 @@ states = 0    # size of Q in NFA
 def mergeTrans(leftTrans, rightTrans):
 	newTrans = leftTrans
 	print()
-	print("left: "+str(leftTrans))
-	print("right: "+str(rightTrans))
+	print("leftTrans: "+str(leftTrans))
+	print("rightTrans: "+str(rightTrans))
 	for each_in in rightTrans:
 		newTrans[each_in] = {}
 		for each_symbol in rightTrans[each_in]:
 			newTrans[each_in][each_symbol] = rightTrans[each_in][each_symbol]
-	print("new: "+str(newTrans))
+	print("newTrans: "+str(newTrans))
 	return newTrans
 	
 def mergeAccepts(leftAccepts, rightAccepts):
 	newAccepts = leftAccepts
-	print()
-	print("left: "+str(leftAccepts))
-	print("right: "+str(rightAccepts))
+	print("leftAccept: "+str(leftAccepts))
+	print("rightAccept: "+str(rightAccepts))
 	for each_accept in rightAccepts:
 		if not(each_accept in newAccepts):
 			bisect.insort(newAccepts, each_accept)
 	print("new: "+str(newAccepts))
 	return newAccepts
 
-def star(someNFA):
-	print()
-	print("someTrans: "+str(someNFA.tranFunctions))
+def starTrans(someNFA):
 	global states
-	starTrans = someNFA.tranFunctions
-	
+	newTrans = someNFA.tranFunctions
+	someStart = someNFA.startState
+	someAccept = someNFA.acceptStates
+	print("\nnewTrans: "+str(newTrans))
+	#print("someStart: "+str(someStart))
+	#print("someAccept: "+str(someAccept))
 	# add e-transitions for each accept state of someNFA
 	# to start state of someNFA
-	for each_accept in someNFA.acceptStates:
-		starTrans[each_accept] = {}
-		starTrans[each_accept]['e'] = [someNFA.startState]
-	print("starTrans: "+str(starTrans))
-	
+	for each_accept in someAccept:
+		if not (each_accept in newTrans):
+			newTrans[each_accept] = {}
+		newTrans[each_accept]['e'] = [someStart]
+	#print("e-Trans to Start: "+str(newTrans))
 	# add new start state and have it e-transition
 	# to original start state
-	states =+ 1
-	starTrans[states] = {}
-	starTrans[states]['e'] = [someNFA.startState]
-	print("starTrans: "+str(starTrans))
+	states += 1
+	newTrans[states] = {}
+	newTrans[states]['e'] = [someStart]
+	print("starTrans: "+str(newTrans))
+	return newTrans
+
+def star(someNFA):
+	global states
+	newTrans = starTrans(someNFA)
 	
 	# add new start state to the set
 	# of accept states 
-	starAccepts = someNFA.acceptStates
-	bisect.insort(starAccepts, states)
+	newAccepts = someNFA.acceptStates
+	bisect.insort(newAccepts, states)
 	
-	starNFA = NFA(states, alphabet, starTrans, states, starAccepts)
+	starNFA = NFA(states, alphabet, newTrans, states, newAccepts)
 	print("STAR")
 	return starNFA
 
@@ -202,23 +209,42 @@ def concat(leftNFA, rightNFA):
 	# add e-transitions for each accept state of leftNFA
 	# to start state of rightNFA
 	for each_accept in leftNFA.acceptStates:
-		concatTrans[each_accept] = {}
-		concatTrans[each_accept]['e'] = [rightNFA.startState]
+		if not (each_accept in concatTrans):
+			concatTrans[each_accept] = {}
+		
+		if not ('e' in concatTrans[each_accept]):
+			concatTrans[each_accept]['e'] = [rightNFA.startState]
+		else: 
+			bisect.insort(concatTrans[each_accept]['e'], rightNFA.startState)
 	print("concatTrans: "+str(concatTrans))
 	
+	
+	concatStart = leftNFA.startState
 	concatAccepts = rightNFA.acceptStates
-	concatNFA = NFA(states, alphabet, concatTrans, states, concatAccepts)
+	print("leftAccepts: "+str(leftNFA.acceptStates))
+	print("rightAccepts: "+str(rightNFA.acceptStates))
+	print("concatStart: "+str(concatStart))
+	print("concatAccepts: "+str(concatAccepts))
+	concatNFA = NFA(states, alphabet, concatTrans, concatStart, concatAccepts)
 	print("CONCAT")
 	return concatNFA
 
 def union(leftNFA, rightNFA):
 	print()
 	global states
-	states =+ 1
-		# A) add new start state #
-		# B) add e transition from new start state to each start start state of 
-		# 	leftNFA and rightNFA
+	# A) add new start state #
+	states += 1
+	# B) add e transition from new start state to each start start state of 
+	# 	leftNFA and rightNFA
 	unionTrans = mergeTrans(leftNFA.tranFunctions, rightNFA.tranFunctions)
+	if not (states in unionTrans):
+		unionTrans[states] = {}
+	if not ('e' in unionTrans[states]):
+		unionTrans[states]['e'] = []
+	bisect.insort(unionTrans[states]['e'], leftNFA.startState)
+	bisect.insort(unionTrans[states]['e'], rightNFA.startState)
+	print("unionTrans: "+str(unionTrans))
+	
 	unionAccepts = mergeAccepts(leftNFA.acceptStates, rightNFA.acceptStates)
 	unionNFA = NFA(states, alphabet, unionTrans, states, unionAccepts)
 	print("UNION")
@@ -481,7 +507,11 @@ def nfa2dfa(thisNFA):
 			for tran in eTransitions(NFAstate):
 				if not (tran in setofeClosures):
 					bisect.insort(setofeClosures, tran)
-		return setofeClosures
+		# recurse to see if any new e-Closures can be found
+		if (setofeClosures == DFAState):
+			return setofeClosures
+		else:
+			return eClosure(setofeClosures)
 		
 	def addState(DFAstate):
 		if not (DFAstate in setOfStates):    # only add if state not already in data structure
@@ -508,7 +538,10 @@ def nfa2dfa(thisNFA):
 							if not (destination in destinationStates):
 								bisect.insort(destinationStates, destination)
 		# Compute e-closure for each state getting added to DFAtransitions
+			#print("destination_states pre e-closure: "+str(destinationStates))
 			destinationStates = (eClosure(destinationStates))
+			#print("destination_states post e-closure: "+str(destinationStates))
+			#print()
 		# ...and add this to the transition functions	
 			DFAtransitions[currState][symbol] = destinationStates 
 
@@ -538,7 +571,8 @@ def nfa2dfa(thisNFA):
 	# 	2.5.1) Convert Transition Function
 	convertedTransitions = {}
 	for i in range(len(setOfStates)):
-		T_index = str(i+1)
+		#T_index = str(i+1)
+		T_index = i+1
 	#  1) read-in state
 		convertedTransitions[T_index] = {}
 		for inSymbol in alphabet:
@@ -554,7 +588,7 @@ def nfa2dfa(thisNFA):
 	#	2.5.3) Convert Accept States Array
 	convertedAcceptStates = []
 	for state in DFAacceptStates:                     
-		convertedAcceptStates.append(state)
+		bisect.insort(convertedAcceptStates, state)
 
 	return DFA(DFAstates, alphabet, convertedTransitions, convertedStartState, convertedAcceptStates, setOfStates)
 
@@ -640,22 +674,22 @@ for state in myNFA.tranFunctions:
 print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
 print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
+print()
+print("\nDFA Tests\n")
+print("Test line\n DFA numState: "+str(myDFA.numStates))
 #print()
-#print("\nDFA Tests\n")
-#print("Test line\n DFA numState: "+str(myDFA.numStates))
+print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
 #print()
-#print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
-#print()
-#print("Test line\n DFA tranFunctions: ")
+print("Test line\n DFA tranFunctions: ")
 #print(str(myDFA.tranFunctions))
-#for state in myDFA.tranFunctions:
-#	for symbol in alphabet:
-#		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
+for state in myDFA.tranFunctions:
+	for symbol in alphabet:
+		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
 #print()
-#print("Test line\n DFA startState: "+str(myDFA.startState))
+print("Test line\n DFA startState: "+str(myDFA.startState))
 #print()
-#print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
+print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
 #print()
-#print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
+print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
 print()
 ######################################################################
