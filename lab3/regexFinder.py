@@ -197,7 +197,7 @@ def star(someNFA):
 	bisect.insort(newAccepts, states)
 	
 	starNFA = NFA(states, alphabet, newTrans, states, newAccepts)
-	print("STAR")
+	#print("STAR")
 	return starNFA
 
 def concat(leftNFA, rightNFA):
@@ -224,11 +224,11 @@ def concat(leftNFA, rightNFA):
 	#print("concatStart: "+str(concatStart))
 	#print("concatAccepts: "+str(concatAccepts))
 	concatNFA = NFA(states, alphabet, concatTrans, concatStart, concatAccepts)
-	print("CONCAT")
+	#print("CONCAT")
 	return concatNFA
 
 def union(leftNFA, rightNFA):
-	print()
+	#print()
 	global states
 	# A) add new start state #
 	states += 1
@@ -245,7 +245,7 @@ def union(leftNFA, rightNFA):
 	
 	unionAccepts = mergeAccepts(leftNFA.acceptStates, rightNFA.acceptStates)
 	unionNFA = NFA(states, alphabet, unionTrans, states, unionAccepts)
-	print("UNION")
+	#print("UNION")
 	return unionNFA
 
 
@@ -305,6 +305,10 @@ class STNode:
 
 		# 1. Kleene Star
 		elif (self.value == '*'):
+			
+			print("value: "+str(self.value)+" left: ",end="")
+			print(str(self.left.value))
+			
 			someNFA = self.left.makeNFA()
 			return star(someNFA)
 		
@@ -317,9 +321,9 @@ class STNode:
 		# 3. Union
 		elif (self.value == '|'):
 			leftNFA = self.left.makeNFA()
-			print("\nJUST COMPLETED LEFT SIDE OF UNION")
+			#print("\nJUST COMPLETED LEFT SIDE OF UNION")
 			rightNFA = self.right.makeNFA()
-			print("\nJUST COMPLETED RIGHT SIDE OF UNION")
+			#print("\nJUST COMPLETED RIGHT SIDE OF UNION")
 			return union(leftNFA, rightNFA)
 			
 		# 4. Invalid Expression
@@ -406,6 +410,7 @@ def scan_regex(in_regex):
 				if not (newNode.value == "*"):
 					newNode.right = operands.pop()
 				newNode.left = operands.pop()
+				
 				operands.append(newNode)
 				operators.append(ch)
 
@@ -417,9 +422,9 @@ def scan_regex(in_regex):
 			curr = peek(operators)
 			while not (curr == '(' or (curr is None)):
 				newNode = STNode(operators.pop())
-				newNode.right = operands.pop()
 				if not (newNode.value == "*"):
-					newNode.left = operands.pop()
+					newNode.right = operands.pop()
+				newNode.left = operands.pop()
 				
 				operands.append(newNode)
 				curr = peek(operators)
