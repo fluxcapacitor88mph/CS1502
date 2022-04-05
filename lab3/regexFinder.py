@@ -144,7 +144,7 @@ states = 0    # size of Q in NFA
 
 def mergeTrans(leftTrans, rightTrans):
 	newTrans = leftTrans
-	print()
+	#print()
 	#print("leftTrans: "+str(leftTrans))
 	#print("rightTrans: "+str(rightTrans))
 	for each_in in rightTrans:
@@ -170,14 +170,15 @@ def starTrans(someNFA):
 	someStart = someNFA.startState
 	someAccept = someNFA.acceptStates
 	#print("\nnewTrans: "+str(newTrans))
-	
+	#print("someStart: "+str(someStart))
+	#print("someAccept: "+str(someAccept))
 	# add e-transitions for each accept state of someNFA
 	# to start state of someNFA
 	for each_accept in someAccept:
 		if not (each_accept in newTrans):
 			newTrans[each_accept] = {}
 		newTrans[each_accept]['e'] = [someStart]
-	
+	#print("e-Trans to Start: "+str(newTrans))
 	# add new start state and have it e-transition
 	# to original start state
 	states += 1
@@ -265,21 +266,18 @@ class STNode:
 			return True
 		else:
 			return False
-
+	
 	def printTree(self):
 		if (self.isLeaf()):
-			if not (self == None):
-				print(self.value,end='')
+			print(self.value,end='')
 		else:
 			if not (self.left == None):
 				self.left.printTree()
-			if not (self == None):
-				print(self.value,end='')
+			print(self.value,end='')
 			if not (self.right == None):
 				self.right.printTree()
 
-
-	def makeNFA(self):	
+	def makeNFA(self):
 	#	For each node, an NFA is created that is
 	#	equivalent to the regular expression represented by the subtree rooted at the node. 
 		global states
@@ -307,7 +305,7 @@ class STNode:
 
 		# 1. Kleene Star
 		elif (self.value == '*'):
-			someNFA = self.right.makeNFA()
+			someNFA = self.left.makeNFA()
 			return star(someNFA)
 		
 		# 2. Concat
@@ -319,7 +317,9 @@ class STNode:
 		# 3. Union
 		elif (self.value == '|'):
 			leftNFA = self.left.makeNFA()
+			print("\nJUST COMPLETED LEFT SIDE OF UNION")
 			rightNFA = self.right.makeNFA()
+			print("\nJUST COMPLETED RIGHT SIDE OF UNION")
 			return union(leftNFA, rightNFA)
 			
 		# 4. Invalid Expression
@@ -352,7 +352,20 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(in_regex):
+	step=0
 	for ch in in_regex:
+
+		print()
+		print("State "+str(step))
+		print("operands:", end=" [ ")
+		for each_oper in operands:
+			print("'"+str(each_oper.value), end = "' ")
+		print("]")
+		print("operators: "+str(operators))
+		print()
+		print("read char: "+ch)
+		step+=1
+
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
 		if ((ch in alphabet) or (ch=='e') or (ch=='N')):
@@ -376,20 +389,23 @@ def scan_regex(in_regex):
 	#	onto the operator stack.
 		elif (ch=='|' or ch=='&' or ch=='*'):  # precedence: | < & < *
 			# Not empty or no operator of greater precedence
-			if ((peek(operators) is None) or ch=='*'):
+			if (peek(operators) is None):
+				operators.append(ch)
+			
+			elif (ch=='*' and not (peek(operators)=='*')):
 				operators.append(ch)
 
-			elif (ch=='&' and not (peek(operators)=='*')):
+			elif (ch=='&' and not(peek(operators)=='*' or peek(operators)=='&')):
 				operators.append(ch)
 
-			elif (ch=='|' and not (peek(operators)=='&' or peek(operators)=='*')):
+			elif (ch=='|' and not (peek(operators)=='&' or peek(operators)=='*' or peek(operators)=='|')):
 				operators.append(ch)
 			
 			else:
 				newNode = STNode(operators.pop())
-				newNode.right = operands.pop()
 				if not (newNode.value == "*"):
-					newNode.left = operands.pop()
+					newNode.right = operands.pop()
+				newNode.left = operands.pop()
 				operands.append(newNode)
 				operators.append(ch)
 
@@ -421,10 +437,20 @@ def empty_stack(stack):
 	curr = peek(operators)
 	step=0
 	while not (curr is None):
+		
+		print("emptyState: "+str(step))
+		print("operands:", end=" [ ")
+		for each_oper in operands:
+			print("'"+str(each_oper.value), end = "' ")
+		print("]")
+		print("operators: "+str(operators))
+		print()
+		step+=1
+	
 		newNode = STNode(operators.pop())
-		newNode.right = operands.pop()
 		if not (newNode.value == "*"):
-			newNode.left = operands.pop()
+			newNode.right = operands.pop()
+		newNode.left = operands.pop()
 		
 		operands.append(newNode)
 		curr = peek(operators)
@@ -630,14 +656,14 @@ outFile.close()
 print()
 print("\nTest line\n name of test file: " + inputFilename)
 #print()
-#print("\nRegex Tests\n")
-print()
+print("\nRegex Tests\n")
+#print()
 print("Test line\n regex: " + regex)
 print("Test line\n convertedRegex: " + str(convertedRegex))
 #print()
-#print("Test line\n alphabet: " , alphabet)
+print("Test line\n alphabet: " , alphabet)
 #print()
-#print("Test line \n input strings: " , inputStrings)
+print("Test line \n input strings: " , inputStrings)
 print()
 #print("Test line\n operands: ", end='[ ')
 #for each_oper in operands:
@@ -646,7 +672,7 @@ print()
 #print()
 #print("Test line\n operators: "+str(operators))
 #print()
-print("Test line\n AST: ")
+print("Test line\n AST root: "+str(myTree.root.value))
 myTree.printTree()
 #print(str(myAST))
 print()
@@ -664,22 +690,22 @@ for state in myNFA.tranFunctions:
 print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
 print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
-print()
-print("\nDFA Tests\n")
-print("Test line\n DFA numState: "+str(myDFA.numStates))
 #print()
-print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
+#print("\nDFA Tests\n")
+#print("Test line\n DFA numState: "+str(myDFA.numStates))
 #print()
-print("Test line\n DFA tranFunctions: ")
+#print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
+#print()
+#print("Test line\n DFA tranFunctions: ")
 #print(str(myDFA.tranFunctions))
-for state in myDFA.tranFunctions:
-	for symbol in alphabet:
-		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
+#for state in myDFA.tranFunctions:
+#	for symbol in alphabet:
+#		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
 #print()
-print("Test line\n DFA startState: "+str(myDFA.startState))
+#print("Test line\n DFA startState: "+str(myDFA.startState))
 #print()
-print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
+#print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
 #print()
-print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
+#print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
 print()
 ######################################################################
