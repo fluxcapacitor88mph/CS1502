@@ -1,0 +1,6 @@
+#!/bin/bash
+rm allTests.out;
+for i in {1..20}; do python3 regexFinder.py testcases/re"$i"In.txt "$i".out; done;
+for i in {1..20}; do echo testcases/re"$i"In.txt >> allTests.out; cat $i.out >> allTests.out; echo >> allTests.out; done;
+for i in {1..20}; do rm $i.out; done;
+exit 0

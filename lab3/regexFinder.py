@@ -248,6 +248,12 @@ def union(leftNFA, rightNFA):
 	#print("UNION")
 	return unionNFA
 
+# Catches Invalid Expressions and exits execution
+def invalidExp():
+	with open(outputFilename, 'w') as outFile:
+		outFile.write("Invalid expression\n")
+	outFile.close()
+	sys.exit()
 
 #Here is how you will convert the regular expression into an equivalent NFA:
 
@@ -305,10 +311,6 @@ class STNode:
 
 		# 1. Kleene Star
 		elif (self.value == '*'):
-			
-			print("value: "+str(self.value)+" left: ",end="")
-			print(str(self.left.value))
-			
 			someNFA = self.left.makeNFA()
 			return star(someNFA)
 		
@@ -392,10 +394,12 @@ def scan_regex(in_regex):
 	#	the precedence of the operator just scanned, push the operator just scanned
 	#	onto the operator stack.
 		elif (ch=='|' or ch=='&' or ch=='*'):  # precedence: | < & < *
-			# Not empty or no operator of greater precedence
+			
+			# Not empty 
 			if (peek(operators) is None):
 				operators.append(ch)
 			
+			# ...or no operator of greater precedence
 			elif (ch=='*' and not (peek(operators)=='*')):
 				operators.append(ch)
 
@@ -408,8 +412,15 @@ def scan_regex(in_regex):
 			else:
 				newNode = STNode(operators.pop())
 				if not (newNode.value == "*"):
-					newNode.right = operands.pop()
-				newNode.left = operands.pop()
+					if not (peek(operands) is None):
+						newNode.right = operands.pop()
+					else:
+						invalidExp()
+
+				if not (peek(operands) is None):
+					newNode.left = operands.pop()
+				else:
+					invalidExp()
 				
 				operands.append(newNode)
 				operators.append(ch)
@@ -431,6 +442,9 @@ def scan_regex(in_regex):
 
 			if (curr == '('):
 				operators.pop()
+				
+			else:
+				invalidExp()
 
 # convert regex to abstract search tree
 scan_regex(convertedRegex)
@@ -454,8 +468,15 @@ def empty_stack(stack):
 	
 		newNode = STNode(operators.pop())
 		if not (newNode.value == "*"):
-			newNode.right = operands.pop()
-		newNode.left = operands.pop()
+			if not (peek(operands) is None):
+				newNode.right = operands.pop()
+			else:
+				invalidExp()
+		
+		if not (peek(operands) is None):
+			newNode.left = operands.pop()
+		else:
+			invalidExp()
 		
 		operands.append(newNode)
 		curr = peek(operators)
@@ -470,8 +491,9 @@ if not (peek(operands) == None):
 
 #	(e) If any problems are encountered that indicate an invalid expression, then termi-
 #		nate parsing and print the error message to the output file as described above.
-valid_expression = True
-if (valid_expression == False):
+#valid_expression = True
+#if (valid_expression == False):
+def invalidExp():
 	with open(outputFilename, 'w') as outFile:
 		outFile.write("Invalid expression")
 	outFile.close()
