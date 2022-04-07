@@ -358,19 +358,19 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(in_regex):
-	step=0
+	#step=0
 	for ch in in_regex:
 
-		print()
-		print("State "+str(step))
-		print("operands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
-		print()
-		print("read char: "+ch)
-		step+=1
+		#print()
+		#print("State "+str(step))
+		#print("operands:", end=" [ ")
+		#for each_oper in operands:
+		#	print("'"+str(each_oper.value), end = "' ")
+		#print("]")
+		#print("operators: "+str(operators))
+		#print()
+		#print("read char: "+ch)
+		#step+=1
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
@@ -454,17 +454,17 @@ scan_regex(convertedRegex)
 #		it onto the operand stack.
 def empty_stack(stack):
 	curr = peek(operators)
-	step=0
+	#step=0
 	while not (curr is None):
 		
-		print("emptyState: "+str(step))
-		print("operands:", end=" [ ")
-		for each_oper in operands:
-			print("'"+str(each_oper.value), end = "' ")
-		print("]")
-		print("operators: "+str(operators))
-		print()
-		step+=1
+		#print("emptyState: "+str(step))
+		#print("operands:", end=" [ ")
+		#for each_oper in operands:
+		#	print("'"+str(each_oper.value), end = "' ")
+		#print("]")
+		#print("operators: "+str(operators))
+		#print()
+		#step+=1
 	
 		newNode = STNode(operators.pop())
 		if not (newNode.value == "*"):
@@ -680,18 +680,18 @@ outFile.close()
 #########################################
 # Test lines: delete before submitting  #
 ######################################################################
-print()
-print("\nTest line\n name of test file: " + inputFilename)
 #print()
-print("\nRegex Tests\n")
+#print("\nTest line\n name of test file: " + inputFilename)
 #print()
-print("Test line\n regex: " + regex)
-print("Test line\n convertedRegex: " + str(convertedRegex))
+#print("\nRegex Tests\n")
 #print()
-print("Test line\n alphabet: " , alphabet)
+#print("Test line\n regex: " + regex)
+#print("Test line\n convertedRegex: " + str(convertedRegex))
 #print()
-print("Test line \n input strings: " , inputStrings)
-print()
+#print("Test line\n alphabet: " , alphabet)
+#print()
+#print("Test line \n input strings: " , inputStrings)
+#print()
 #print("Test line\n operands: ", end='[ ')
 #for each_oper in operands:
 #	print("'"+str(each_oper.value), end = "' ")
@@ -699,24 +699,24 @@ print()
 #print()
 #print("Test line\n operators: "+str(operators))
 #print()
-print("Test line\n AST root: "+str(myTree.root.value))
-myTree.printTree()
+#print("Test line\n AST root: "+str(myTree.root.value))
+#myTree.printTree()
 #print(str(myAST))
-print()
-print("\nNFA Tests\n")
-print("Test line\n NFA numState: "+str(myNFA.numStates))
 #print()
-print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
+#print("\nNFA Tests\n")
+#print("Test line\n NFA numState: "+str(myNFA.numStates))
 #print()
-print("Test line\n NFA tranFunctions: ")
+#print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
+#print()
+#print("Test line\n NFA tranFunctions: ")
 #print(str(myNFA.tranFunctions))
-for state in myNFA.tranFunctions:
-	for symbol in myNFA.tranFunctions[state]:
-		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
+#for state in myNFA.tranFunctions:
+#	for symbol in myNFA.tranFunctions[state]:
+#		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
 #print()
-print("Test line\n NFA startState: "+str(myNFA.startState))
+#print("Test line\n NFA startState: "+str(myNFA.startState))
 #print()
-print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
+#print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
 #print()
 #print("\nDFA Tests\n")
 #print("Test line\n DFA numState: "+str(myDFA.numStates))
@@ -734,5 +734,5 @@ print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
 #print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
 #print()
 #print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
-print()
+#print()
 ######################################################################
