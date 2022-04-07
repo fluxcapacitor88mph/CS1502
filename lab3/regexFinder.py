@@ -144,24 +144,17 @@ states = 0    # size of Q in NFA
 
 def mergeTrans(leftTrans, rightTrans):
 	newTrans = leftTrans
-	#print()
-	#print("leftTrans: "+str(leftTrans))
-	#print("rightTrans: "+str(rightTrans))
 	for each_in in rightTrans:
 		newTrans[each_in] = {}
 		for each_symbol in rightTrans[each_in]:
 			newTrans[each_in][each_symbol] = rightTrans[each_in][each_symbol]
-	#print("newTrans: "+str(newTrans))
 	return newTrans
 	
 def mergeAccepts(leftAccepts, rightAccepts):
 	newAccepts = leftAccepts
-	#print("leftAccept: "+str(leftAccepts))
-	#print("rightAccept: "+str(rightAccepts))
 	for each_accept in rightAccepts:
 		if not(each_accept in newAccepts):
 			bisect.insort(newAccepts, each_accept)
-	#print("new: "+str(newAccepts))
 	return newAccepts
 
 def starTrans(someNFA):
@@ -169,22 +162,20 @@ def starTrans(someNFA):
 	newTrans = someNFA.tranFunctions
 	someStart = someNFA.startState
 	someAccept = someNFA.acceptStates
-	#print("\nnewTrans: "+str(newTrans))
-	#print("someStart: "+str(someStart))
-	#print("someAccept: "+str(someAccept))
+
 	# add e-transitions for each accept state of someNFA
 	# to start state of someNFA
 	for each_accept in someAccept:
 		if not (each_accept in newTrans):
 			newTrans[each_accept] = {}
 		newTrans[each_accept]['e'] = [someStart]
-	#print("e-Trans to Start: "+str(newTrans))
+
 	# add new start state and have it e-transition
 	# to original start state
 	states += 1
 	newTrans[states] = {}
 	newTrans[states]['e'] = [someStart]
-	#print("starTrans: "+str(newTrans))
+
 	return newTrans
 
 def star(someNFA):
@@ -197,7 +188,7 @@ def star(someNFA):
 	bisect.insort(newAccepts, states)
 	
 	starNFA = NFA(states, alphabet, newTrans, states, newAccepts)
-	#print("STAR")
+
 	return starNFA
 
 def concat(leftNFA, rightNFA):
@@ -214,21 +205,15 @@ def concat(leftNFA, rightNFA):
 			concatTrans[each_accept]['e'] = [rightNFA.startState]
 		else: 
 			bisect.insort(concatTrans[each_accept]['e'], rightNFA.startState)
-	#print("concatTrans: "+str(concatTrans))
-	
 	
 	concatStart = leftNFA.startState
 	concatAccepts = rightNFA.acceptStates
-	#print("leftAccepts: "+str(leftNFA.acceptStates))
-	#print("rightAccepts: "+str(rightNFA.acceptStates))
-	#print("concatStart: "+str(concatStart))
-	#print("concatAccepts: "+str(concatAccepts))
+
 	concatNFA = NFA(states, alphabet, concatTrans, concatStart, concatAccepts)
-	#print("CONCAT")
+
 	return concatNFA
 
 def union(leftNFA, rightNFA):
-	#print()
 	global states
 	# A) add new start state #
 	states += 1
@@ -241,11 +226,10 @@ def union(leftNFA, rightNFA):
 		unionTrans[states]['e'] = []
 	bisect.insort(unionTrans[states]['e'], leftNFA.startState)
 	bisect.insort(unionTrans[states]['e'], rightNFA.startState)
-	#print("unionTrans: "+str(unionTrans))
 	
 	unionAccepts = mergeAccepts(leftNFA.acceptStates, rightNFA.acceptStates)
 	unionNFA = NFA(states, alphabet, unionTrans, states, unionAccepts)
-	#print("UNION")
+
 	return unionNFA
 
 # Catches Invalid Expressions and exits execution
@@ -323,9 +307,7 @@ class STNode:
 		# 3. Union
 		elif (self.value == '|'):
 			leftNFA = self.left.makeNFA()
-			#print("\nJUST COMPLETED LEFT SIDE OF UNION")
 			rightNFA = self.right.makeNFA()
-			#print("\nJUST COMPLETED RIGHT SIDE OF UNION")
 			return union(leftNFA, rightNFA)
 			
 		# 4. Invalid Expression
@@ -340,7 +322,6 @@ class syntax_tree:
 		return self.root.printTree()
 
 	def makeNFA(self):
-		print("",end="")
 		if not (self.root is None):
 			return self.root.makeNFA()
 	
@@ -358,19 +339,7 @@ def peek(stack):
 
 #	(b) Scan the regular expression character by character, ignoring space characters.	
 def scan_regex(in_regex):
-	#step=0
 	for ch in in_regex:
-
-		#print()
-		#print("State "+str(step))
-		#print("operands:", end=" [ ")
-		#for each_oper in operands:
-		#	print("'"+str(each_oper.value), end = "' ")
-		#print("]")
-		#print("operators: "+str(operators))
-		#print()
-		#print("read char: "+ch)
-		#step+=1
 
 	# i. If a symbol from the alphabet is encountered, then create a syntax tree node
 	#	containing that symbol, and push it onto the operand stack.	
@@ -454,18 +423,8 @@ scan_regex(convertedRegex)
 #		it onto the operand stack.
 def empty_stack(stack):
 	curr = peek(operators)
-	#step=0
 	while not (curr is None):
-		
-		#print("emptyState: "+str(step))
-		#print("operands:", end=" [ ")
-		#for each_oper in operands:
-		#	print("'"+str(each_oper.value), end = "' ")
-		#print("]")
-		#print("operators: "+str(operators))
-		#print()
-		#step+=1
-	
+
 		newNode = STNode(operators.pop())
 		if not (newNode.value == "*"):
 			if not (peek(operands) is None):
@@ -508,11 +467,8 @@ def invalidExp():
 #	created from the NFA's of the child nodes using the constructions described in section
 #	1.2 of the text (under \closure under the regular operations").
 
-
-
 # 3. And now you have an NFA equivalent to the regular expression.
 myNFA = myTree.makeNFA()
-
 
 
 ###########################################################################################
@@ -580,10 +536,8 @@ def nfa2dfa(thisNFA):
 							if not (destination in destinationStates):
 								bisect.insort(destinationStates, destination)
 		# Compute e-closure for each state getting added to DFAtransitions
-			#print("destination_states pre e-closure: "+str(destinationStates))
 			destinationStates = (eClosure(destinationStates))
-			#print("destination_states post e-closure: "+str(destinationStates))
-			#print()
+
 		# ...and add this to the transition functions	
 			DFAtransitions[currState][symbol] = destinationStates 
 
@@ -613,7 +567,6 @@ def nfa2dfa(thisNFA):
 	# 	2.5.1) Convert Transition Function
 	convertedTransitions = {}
 	for i in range(len(setOfStates)):
-		#T_index = str(i+1)
 		T_index = i+1
 	#  1) read-in state
 		convertedTransitions[T_index] = {}
@@ -668,71 +621,4 @@ with open(outputFilename, 'w') as outFile:
 # 	"Invalid expression" to the output file on a single line. Nothing else should
 # 	be printed to the file.
 
-
-# <code goes here>
-	
-
 outFile.close()
-
-
-
-
-#########################################
-# Test lines: delete before submitting  #
-######################################################################
-#print()
-#print("\nTest line\n name of test file: " + inputFilename)
-#print()
-#print("\nRegex Tests\n")
-#print()
-#print("Test line\n regex: " + regex)
-#print("Test line\n convertedRegex: " + str(convertedRegex))
-#print()
-#print("Test line\n alphabet: " , alphabet)
-#print()
-#print("Test line \n input strings: " , inputStrings)
-#print()
-#print("Test line\n operands: ", end='[ ')
-#for each_oper in operands:
-#	print("'"+str(each_oper.value), end = "' ")
-#print("]")
-#print()
-#print("Test line\n operators: "+str(operators))
-#print()
-#print("Test line\n AST root: "+str(myTree.root.value))
-#myTree.printTree()
-#print(str(myAST))
-#print()
-#print("\nNFA Tests\n")
-#print("Test line\n NFA numState: "+str(myNFA.numStates))
-#print()
-#print("Test line\n NFA alphabet: "+str(myNFA.alphabet))
-#print()
-#print("Test line\n NFA tranFunctions: ")
-#print(str(myNFA.tranFunctions))
-#for state in myNFA.tranFunctions:
-#	for symbol in myNFA.tranFunctions[state]:
-#		print(str(state)+" \'"+symbol+"\' "+str(myNFA.tranFunctions[state][symbol]))
-#print()
-#print("Test line\n NFA startState: "+str(myNFA.startState))
-#print()
-#print("Test line\n NFA acceptStates: "+str(myNFA.acceptStates))
-#print()
-#print("\nDFA Tests\n")
-#print("Test line\n DFA numState: "+str(myDFA.numStates))
-#print()
-#print("Test line\n DFA alphabet: "+str(myDFA.alphabet))
-#print()
-#print("Test line\n DFA tranFunctions: ")
-#print(str(myDFA.tranFunctions))
-#for state in myDFA.tranFunctions:
-#	for symbol in alphabet:
-#		print(str(state)+" \'"+symbol+"\' "+str(myDFA.tranFunctions[state][symbol]))
-#print()
-#print("Test line\n DFA startState: "+str(myDFA.startState))
-#print()
-#print("Test line\n DFA acceptStates: "+str(myDFA.acceptStates))
-#print()
-#print("Test line\n DFA setOfStates"+str(myDFA.setOfStates))
-#print()
-######################################################################
